@@ -13,14 +13,14 @@ import sc from "./data/SouthCarolina.json";
 
 const Styles = styled.div`
   .nav {
-    background-color: #9ea7aa;
+    background-color: #37474f;
   }
 
   .nav-item .nav-link {
-    color: black;
+    color: white;
 
     &:hover {
-      color: white;
+      color: #9ea7aa;
     }
   }
 
@@ -102,9 +102,11 @@ class Edit extends React.Component {
 
   // constructor(props) {
   //   super(props);
-  //   this.state = { isClicked: false };
-
-  //   this.handleClick = this.handleClick.bind(this);
+  //   this.state = {
+  //     // isClicked: false,
+  //     isSidebarOpen: false
+  //   };
+  //   // this.handleClick = this.handleClick.bind(this);
   // }
 
   getStyle() {
@@ -126,9 +128,15 @@ class Edit extends React.Component {
 
   // handleClick() {
   //   this.setState(state => ({
-  //     isClicked: !state.isClicked
+  //     isClicked: state.isClicked
   //   }));
   // }
+
+  handleClick() {
+    this.setState(state => ({
+      isSidebarOpen: state.isOpen
+    }));
+  }
 
   render() {
     const position = [this.state.lat, this.state.lng];
@@ -139,6 +147,8 @@ class Edit extends React.Component {
           width={"40%"}
           menuClassName={"menu-right"}
           burgerButtonClassName={"burger-right"}
+          // isOpen={this.state.isSidebarOpen}
+          // onStateChange={this.handleStateChange}
         >
           <Table striped bordered hover size="sm">
             <thead>

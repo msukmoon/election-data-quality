@@ -1,23 +1,24 @@
 import React from "react";
 import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
+import Jumbotron from "react-bootstrap/Jumbotron";
 import styled from "styled-components";
 
-const Styles = styled.div``;
+const Styles = styled.div`
+  .jumbotron {
+    background-color: #cfd8dc;
+  },
+`;
 
 function NotFound() {
   return (
     <Styles>
-      <Container className="pt-5">
-        <Row>
-          <Col>
-            <h2>Error 404</h2>
-          </Col>
-        </Row>
-        <Row>
-          <Col>Page not found :(</Col>
-        </Row>
+      <Jumbotron fluid className="px-0">
+        <Container>
+          <h1>Error 404</h1>
+        </Container>
+      </Jumbotron>
+      <Container>
+        <p>Page not found :(</p>
       </Container>
     </Styles>
   );

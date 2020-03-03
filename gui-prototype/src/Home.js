@@ -1,5 +1,7 @@
 import React from "react";
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Button from "react-bootstrap/Button";
 import styled from "styled-components";
@@ -26,6 +28,43 @@ function Home() {
           </p>
         </Container>
       </Jumbotron>
+      <Container>
+        <Row>
+          <Col>
+            <Row>
+              <h5>Title of a description</h5>
+            </Row>
+            <Row>
+              <p>
+                Brief introduction or description about the project will be
+                located here.
+              </p>
+            </Row>
+          </Col>
+          <Col>
+            <Row>
+              <h5>Title of some description</h5>
+            </Row>
+            <Row>
+              <p>
+                Brief introduction or description about the project will be
+                located here.
+              </p>
+            </Row>
+          </Col>
+          <Col>
+            <Row>
+              <h5>Title of some other description</h5>
+            </Row>
+            <Row>
+              <p>
+                Brief introduction or description about the project will be
+                located here.
+              </p>
+            </Row>
+          </Col>
+        </Row>
+      </Container>
     </Styles>
   );
 }
