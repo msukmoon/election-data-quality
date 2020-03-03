@@ -3,6 +3,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
+import NavDropdown from "react-bootstrap/NavDropdown";
 import Table from "react-bootstrap/Table";
 import { Map, TileLayer, GeoJSON, FeatureGroup, Tooltip } from "react-leaflet";
 import { slide as Menu } from "react-burger-menu";
@@ -26,7 +27,7 @@ const Styles = styled.div`
 
   .leaflet-container {
     width: 100%;
-    height: 100vh;
+    height: 90vh;
   }
 
   // NOTE: helper classes below are from react-burger-menu library
@@ -78,8 +79,8 @@ const Styles = styled.div`
 
   /* Wrapper for item list */
   .bm-item-list {
-    color: white;
-    padding: 0.8em;
+    color: black;
+    padding: 0;
   }
 
   /* Individual item */
@@ -107,6 +108,7 @@ class Edit extends React.Component {
   //     isSidebarOpen: false
   //   };
   //   // this.handleClick = this.handleClick.bind(this);
+  //   this.isSidebarOpen = this.handleClick.bind(this);
   // }
 
   getStyle() {
@@ -132,11 +134,15 @@ class Edit extends React.Component {
   //   }));
   // }
 
-  handleClick() {
-    this.setState(state => ({
-      isSidebarOpen: state.isOpen
-    }));
-  }
+  // handleClick() {
+  //   this.setState(state => ({
+  //     isSidebarOpen: state.isOpen
+  //   }));
+  // }
+
+  // handleStateSelect() {
+
+  // }
 
   render() {
     const position = [this.state.lat, this.state.lng];
@@ -144,12 +150,14 @@ class Edit extends React.Component {
       <Styles>
         <Menu
           right
-          width={"40%"}
+          width={"50%"}
           menuClassName={"menu-right"}
           burgerButtonClassName={"burger-right"}
           // isOpen={this.state.isSidebarOpen}
           // onStateChange={this.handleStateChange}
         >
+          <h3>Precinct Bradfordsville</h3>
+          <h5>Marion County, Kentucky</h5>
           <Table striped bordered hover size="sm">
             <thead>
               <tr>
@@ -157,7 +165,7 @@ class Edit extends React.Component {
                 <th>Registered</th>
                 <th>Democrats</th>
                 <th>Republicans</th>
-                <th>Difference</th>
+                {/* <th>Difference</th> */}
               </tr>
             </thead>
             <tbody>
@@ -166,7 +174,7 @@ class Edit extends React.Component {
                 <td>5000</td>
                 <td>2600</td>
                 <td>2400</td>
-                <td>200</td>
+                {/* <td>200</td> */}
               </tr>
             </tbody>
           </Table>
@@ -187,6 +195,17 @@ class Edit extends React.Component {
                 <Nav.Item>
                   <Nav.Link eventKey="b4">Screenshot</Nav.Link>
                 </Nav.Item>
+                <NavDropdown title="State" id="basic-nav-dropdown">
+                  <NavDropdown.Item href="#action/ky">
+                    Kentucky
+                  </NavDropdown.Item>
+                  <NavDropdown.Item href="#action/la">
+                    Louisiana
+                  </NavDropdown.Item>
+                  <NavDropdown.Item href="#action/sc">
+                    South Carolina
+                  </NavDropdown.Item>
+                </NavDropdown>
               </Nav>
             </Col>
           </Row>
@@ -217,9 +236,7 @@ class Edit extends React.Component {
                         onMouseOut={this.handleMouseOut}
                         // onClick={this.handleClick}
                       >
-                        <Tooltip>
-                          {"Precinct Name: " + f.properties.name}
-                        </Tooltip>
+                        <Tooltip>{"Precinct " + f.properties.name}</Tooltip>
                       </GeoJSON>
                     );
                   })}
