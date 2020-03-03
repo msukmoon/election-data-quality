@@ -21,7 +21,7 @@ const Styles = styled.div`
 function NavBar() {
   return (
     <Styles>
-      <Navbar fixed="top" expand="lg">
+      <Navbar /* fixed="top" */ expand="lg">
         <Navbar.Brand href="/">
           <img
             src={logo}

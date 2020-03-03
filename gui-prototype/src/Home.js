@@ -13,7 +13,7 @@ const Styles = styled.div`
 function Home() {
   return (
     <Styles>
-      <Jumbotron fluid>
+      <Jumbotron fluid className="px-0">
         <Container>
           <h1>Welcome!</h1>
           <p>
