@@ -1,11 +1,18 @@
-import React from "react";
+import React, { Component } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Table from "react-bootstrap/Table";
-import { Map, TileLayer, GeoJSON, FeatureGroup, Tooltip } from "react-leaflet";
+import {
+  Map,
+  TileLayer,
+  GeoJSON,
+  FeatureGroup,
+  Tooltip,
+  Polygon,
+} from "react-leaflet";
 import { slide as Menu } from "react-burger-menu";
 import styled, { keyframes } from "styled-components";
 import ky from "./data/Kentucky.json";
@@ -98,27 +105,45 @@ class Edit extends React.Component {
   state = {
     lat: 34,
     lng: -85,
-    zoom: 6
+    zoom: 6,
+    precincts: [
+      {
+        id: 1,
+        coordinates: [
+          [
+            [37, -109.05],
+            [41, -109.03],
+            [41, -102.05],
+            [37, -102.04],
+          ],
+          [
+            [37.29, -108.58],
+            [40.71, -108.58],
+            [40.71, -102.5],
+            [37.29, -102.5],
+          ],
+        ],
+      },
+    ],
   };
 
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {
-  //     // isClicked: false,
-  //     isSidebarOpen: false
-  //   };
-  //   // this.handleClick = this.handleClick.bind(this);
-  //   this.isSidebarOpen = this.handleClick.bind(this);
-  // }
-
-  getStyle() {
-    return {
-      color: "#102027",
-      weight: 1,
-      fillOpacity: 0.5,
-      fillColor: "#fff9c4"
-    };
+  constructor(props) {
+    super(props);
+    // this.state = {
+    //   isSidebarOpen: false
+    // };
+    // this.isSidebarOpen = this.handleClick.bind(this);
+    // this.mapRef = React.createRef();
   }
+
+  // getStyle() {
+  //   return {
+  //     color: "#102027",
+  //     weight: 1,
+  //     fillOpacity: 0.5,
+  //     fillColor: "#fff9c4",
+  //   };
+  // }
 
   handleMouseOver(e) {
     e.target.openTooltip();
@@ -128,24 +153,32 @@ class Edit extends React.Component {
     e.target.closeTooltip();
   }
 
-  // handleClick() {
-  //   this.setState(state => ({
-  //     isClicked: state.isClicked
-  //   }));
-  // }
+  handleClick() {
+    // this.setState(state => ({
+    //   isSidebarOpen: state.isOpen
+    // }));
+  }
 
-  // handleClick() {
-  //   this.setState(state => ({
-  //     isSidebarOpen: state.isOpen
-  //   }));
-  // }
+  handleDblClick() {}
 
-  // handleStateSelect() {
-
+  // handleStateSelect(mapRef) {
+  //   this.mapRef.setZoom(5);
   // }
 
   render() {
     const position = [this.state.lat, this.state.lng];
+    this.state.precincts.push({
+      id: 2,
+      coordinates: [
+        [
+          [41, -111.03],
+          [45, -111.04],
+          [46, -107.05],
+          [45, -104.05],
+          [41, -104.05],
+        ],
+      ],
+    });
     return (
       <Styles>
         <Menu
@@ -165,7 +198,6 @@ class Edit extends React.Component {
                 <th>Registered</th>
                 <th>Democrats</th>
                 <th>Republicans</th>
-                {/* <th>Difference</th> */}
               </tr>
             </thead>
             <tbody>
@@ -174,7 +206,6 @@ class Edit extends React.Component {
                 <td>5000</td>
                 <td>2600</td>
                 <td>2400</td>
-                {/* <td>200</td> */}
               </tr>
             </tbody>
           </Table>
@@ -196,14 +227,25 @@ class Edit extends React.Component {
                   <Nav.Link eventKey="b4">Screenshot</Nav.Link>
                 </Nav.Item>
                 <NavDropdown title="State" id="basic-nav-dropdown">
-                  <NavDropdown.Item href="#action/ky">
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
                     Kentucky
                   </NavDropdown.Item>
-                  <NavDropdown.Item href="#action/la">
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
                     Louisiana
                   </NavDropdown.Item>
-                  <NavDropdown.Item href="#action/sc">
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
                     South Carolina
+                  </NavDropdown.Item>
+                </NavDropdown>
+                <NavDropdown title="Data" id="basic-nav-dropdown">
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                    2016 Presidential
+                  </NavDropdown.Item>
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                    2016 Congressional
+                  </NavDropdown.Item>
+                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                    2018 Congressional
                   </NavDropdown.Item>
                 </NavDropdown>
               </Nav>
@@ -211,36 +253,89 @@ class Edit extends React.Component {
           </Row>
           <Row>
             <Col>
-              <Map center={position} zoom={this.state.zoom}>
+              <Map
+                // ref={ref => {
+                //   this.mapRef = ref;
+                // }}
+                center={position}
+                zoom={this.state.zoom}
+              >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <FeatureGroup>
+                  {this.state.precincts.map((precinct) => {
+                    return (
+                      <Polygon
+                        positions={precinct.coordinates}
+                        smoothFactor={5}
+                        color={"#102027"}
+                        weight={1}
+                        fillOpacity={0.5}
+                        fillColor={"#fff9c4"}
+                        onClick={this.handleClick}
+                        onDblClick={this.handleDblClick}
+                        onMouseOver={this.handleMouseOver}
+                        onMouseOut={this.handleMouseOut}
+                      >
+                        <Tooltip>
+                          <b>{"Precinct ID: " + precinct.id}</b>
+                        </Tooltip>
+                      </Polygon>
+                    );
+                  })}
+                </FeatureGroup>
+                {/* <FeatureGroup>
                   {ky.features.map(f => {
                     return (
                       <GeoJSON
                         key={f.properties.id}
                         data={f}
                         style={this.getStyle}
-                        // onMouseOver={e => {
-                        //   e.target.openPopup();
-                        // }}
-                        // onMouseOut={e => {
-                        //   e.target.closePopup();
-                        // }}
-                        // onClick={e => {
-                        //   e.target.openPopup();
-                        // }}
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
                         // onClick={this.handleClick}
                       >
-                        <Tooltip>{"Precinct " + f.properties.name}</Tooltip>
+                        <Tooltip>
+                          <b>{"Precinct " + f.properties.name}</b>
+                        </Tooltip>
                       </GeoJSON>
                     );
                   })}
-                </FeatureGroup>
+                  {la.features.map(f => {
+                    return (
+                      <GeoJSON
+                        key={f.properties.id}
+                        data={f}
+                        style={this.getStyle}
+                        onMouseOver={this.handleMouseOver}
+                        onMouseOut={this.handleMouseOut}
+                        // onClick={this.handleClick}
+                      >
+                        <Tooltip>
+                          <b>{"Precinct " + f.properties.name}</b>
+                        </Tooltip>
+                      </GeoJSON>
+                    );
+                  })}
+                  {sc.features.map(f => {
+                    return (
+                      <GeoJSON
+                        key={f.properties.id}
+                        data={f}
+                        style={this.getStyle}
+                        onMouseOver={this.handleMouseOver}
+                        onMouseOut={this.handleMouseOut}
+                        // onClick={this.handleClick}
+                      >
+                        <Tooltip>
+                          <b>{"Precinct " + f.properties.name}</b>
+                        </Tooltip>
+                      </GeoJSON>
+                    );
+                  })}
+                </FeatureGroup> */}
               </Map>
             </Col>
           </Row>
