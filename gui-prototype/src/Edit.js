@@ -11,13 +11,13 @@ import {
   GeoJSON,
   FeatureGroup,
   Tooltip,
-  Polygon,
+  Polygon
 } from "react-leaflet";
 import { slide as Menu } from "react-burger-menu";
 import styled, { keyframes } from "styled-components";
-import ky from "./data/Kentucky.json";
-import la from "./data/Louisiana.json";
-import sc from "./data/SouthCarolina.json";
+// import ky from "./data/Kentucky.json";
+// import la from "./data/Louisiana.json";
+// import sc from "./data/SouthCarolina.json";
 
 const Styles = styled.div`
   .nav {
@@ -38,25 +38,6 @@ const Styles = styled.div`
   }
 
   // NOTE: helper classes below are from react-burger-menu library
-  /* Position and sizing of burger button */
-  .bm-burger-button {
-    position: fixed;
-    width: 20px;
-    height: 20px;
-    right: 20px;
-    top: 16px;
-  }
-
-  /* Color/shape of burger icon bars */
-  .bm-burger-bars {
-    background: white;
-  }
-
-  /* Color/shape of burger icon bars on hover*/
-  .bm-burger-bars-hover {
-    background: #9ea7aa;
-  }
-
   /* Position and sizing of clickable cross button */
   .bm-cross-button {
     height: 24px;
@@ -102,38 +83,34 @@ const Styles = styled.div`
 `;
 
 class Edit extends React.Component {
-  state = {
-    lat: 34,
-    lng: -85,
-    zoom: 6,
-    precincts: [
-      {
-        id: 1,
-        coordinates: [
-          [
-            [37, -109.05],
-            [41, -109.03],
-            [41, -102.05],
-            [37, -102.04],
-          ],
-          [
-            [37.29, -108.58],
-            [40.71, -108.58],
-            [40.71, -102.5],
-            [37.29, -102.5],
-          ],
-        ],
-      },
-    ],
-  };
-
   constructor(props) {
     super(props);
-    // this.state = {
-    //   isSidebarOpen: false
-    // };
-    // this.isSidebarOpen = this.handleClick.bind(this);
-    // this.mapRef = React.createRef();
+    this.state = {
+      latitude: 34,
+      longitude: -85,
+      zoom: 6,
+      sidebarOpen: false,
+      currPrecinct: 0,
+      precincts: [
+        {
+          id: 1,
+          coordinates: [
+            [
+              [37, -109.05],
+              [41, -109.03],
+              [41, -102.05],
+              [37, -102.04]
+            ],
+            [
+              [37.29, -108.58],
+              [40.71, -108.58],
+              [40.71, -102.5],
+              [37.29, -102.5]
+            ]
+          ]
+        }
+      ]
+    };
   }
 
   // getStyle() {
@@ -145,6 +122,10 @@ class Edit extends React.Component {
   //   };
   // }
 
+  displayPrecinctData() {
+    return this.state.currPrecinct;
+  }
+
   handleMouseOver(e) {
     e.target.openTooltip();
   }
@@ -153,20 +134,153 @@ class Edit extends React.Component {
     e.target.closeTooltip();
   }
 
-  handleClick() {
-    // this.setState(state => ({
-    //   isSidebarOpen: state.isOpen
-    // }));
+  handleClick(id) {
+    this.setState({ currPrecinct: id, sidebarOpen: true });
   }
 
   handleDblClick() {}
 
-  // handleStateSelect(mapRef) {
-  //   this.mapRef.setZoom(5);
-  // }
+  handleStateChange(state) {
+    this.setState({ sidebarOpen: state.isOpen });
+  }
+
+  handleStateSelect(id) {
+    // Kentucky is selected
+    if (id === 1) {
+      this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
+    }
+    // Louisiana is selected
+    else if (id === 2) {
+      this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
+    }
+    // South Carolina is selected
+    else if (id === 3) {
+      this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
+    }
+  }
+
+  componentDidMount() {
+    // fetch("api/precinct", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify({
+    //     districtId: "1",
+    //     countyId: "1",
+    //     stateId: "1",
+    //     canonicalName: "foo-bar",
+    //     population: "22",
+    //     ethnicityMap: {
+    //       WHITE: "199",
+    //       AFRICAN_AMERICAN: "100",
+    //       ASIAN_PACIFIC: "200",
+    //       HISPANIC: "300",
+    //       NATIVE: "400",
+    //       OTHER: "200"
+    //     },
+    //     electionMap: {
+    //       CONGRESSIONAL_16_REP: "10",
+    //       CONGRESSIONAL_18_REP: "200",
+    //       PRESIDENTIAL_16_REP: "300",
+    //       CONGRESSIONAL_16_DEM: "100",
+    //       CONGRESSIONAL_18_DEM: "200",
+    //       PRESIDENTIAL_16_DEM: "300"
+    //     },
+    //     adjacentPrecinctIds: [],
+    //     logBag: {
+    //       "1": "i dunno what i'm doing",
+    //       "2": "the integer key is the id for each comment"
+    //     },
+    //     ghost: false,
+    //     coordinates: [
+    //       [
+    //         [37, -109.05],
+    //         [41, -109.03],
+    //         [41, -102.05],
+    //         [37, -102.04]
+    //       ],
+    //       [
+    //         [37.29, -108.58],
+    //         [40.71, -108.58],
+    //         [40.71, -102.5],
+    //         [37.29, -102.5]
+    //       ]
+    //     ]
+    //   })
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log("Success:", data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
+
+    // fetch("api/precinct", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify({
+    //     districtId: "1",
+    //     countyId: "1",
+    //     stateId: "1",
+    //     canonicalName: "baz-foo",
+    //     population: "22",
+    //     ethnicityMap: {
+    //       WHITE: "199",
+    //       AFRICAN_AMERICAN: "100",
+    //       ASIAN_PACIFIC: "200",
+    //       HISPANIC: "300",
+    //       NATIVE: "400",
+    //       OTHER: "200"
+    //     },
+    //     electionMap: {
+    //       CONGRESSIONAL_16_REP: "10",
+    //       CONGRESSIONAL_18_REP: "200",
+    //       PRESIDENTIAL_16_REP: "300",
+    //       CONGRESSIONAL_16_DEM: "100",
+    //       CONGRESSIONAL_18_DEM: "200",
+    //       PRESIDENTIAL_16_DEM: "300"
+    //     },
+    //     adjacentPrecinctIds: [],
+    //     logBag: {
+    //       "1": "something went wrong",
+    //       "2": "the integer key is the id for each comment"
+    //     },
+    //     ghost: false,
+    //     coordinates: [
+    //       [
+    //         [41, -111.03],
+    //         [45, -111.04],
+    //         [46, -107.05],
+    //         [45, -104.05],
+    //         [41, -104.05]
+    //       ]
+    //     ]
+    //   })
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log("Success:", data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
+
+    fetch("api/precinct/all")
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        this.setState((prevState) => ({
+          // precincts: [...prevState.precincts, { precincts: result.precincts }]
+        }));
+      });
+  }
 
   render() {
-    const position = [this.state.lat, this.state.lng];
+    const position = [this.state.latitude, this.state.longitude];
     this.state.precincts.push({
       id: 2,
       coordinates: [
@@ -175,9 +289,9 @@ class Edit extends React.Component {
           [45, -111.04],
           [46, -107.05],
           [45, -104.05],
-          [41, -104.05],
-        ],
-      ],
+          [41, -104.05]
+        ]
+      ]
     });
     return (
       <Styles>
@@ -185,12 +299,12 @@ class Edit extends React.Component {
           right
           width={"50%"}
           menuClassName={"menu-right"}
-          burgerButtonClassName={"burger-right"}
-          // isOpen={this.state.isSidebarOpen}
-          // onStateChange={this.handleStateChange}
+          customBurgerIcon={false}
+          isOpen={this.state.sidebarOpen}
+          onStateChange={(state) => this.handleStateChange(state)}
         >
-          <h3>Precinct Bradfordsville</h3>
-          <h5>Marion County, Kentucky</h5>
+          <h3>{this.displayPrecinctData()}</h3>
+          <h5>Test County, Test</h5>
           <Table striped bordered hover size="sm">
             <thead>
               <tr>
@@ -202,10 +316,10 @@ class Edit extends React.Component {
             </thead>
             <tbody>
               <tr>
-                <td>10000</td>
-                <td>5000</td>
-                <td>2600</td>
-                <td>2400</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
               </tr>
             </tbody>
           </Table>
@@ -227,24 +341,24 @@ class Edit extends React.Component {
                   <Nav.Link eventKey="b4">Screenshot</Nav.Link>
                 </Nav.Item>
                 <NavDropdown title="State" id="basic-nav-dropdown">
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item onClick={() => this.handleStateSelect(1)}>
                     Kentucky
                   </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item onClick={() => this.handleStateSelect(2)}>
                     Louisiana
                   </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item onClick={() => this.handleStateSelect(3)}>
                     South Carolina
                   </NavDropdown.Item>
                 </NavDropdown>
                 <NavDropdown title="Data" id="basic-nav-dropdown">
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item /* onClick={} */>
                     2016 Presidential
                   </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item /* onClick={} */>
                     2016 Congressional
                   </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={this.handleStateSelect} */>
+                  <NavDropdown.Item /* onClick={} */>
                     2018 Congressional
                   </NavDropdown.Item>
                 </NavDropdown>
@@ -253,13 +367,7 @@ class Edit extends React.Component {
           </Row>
           <Row>
             <Col>
-              <Map
-                // ref={ref => {
-                //   this.mapRef = ref;
-                // }}
-                center={position}
-                zoom={this.state.zoom}
-              >
+              <Map center={position} zoom={this.state.zoom}>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -274,7 +382,7 @@ class Edit extends React.Component {
                         weight={1}
                         fillOpacity={0.5}
                         fillColor={"#fff9c4"}
-                        onClick={this.handleClick}
+                        onClick={() => this.handleClick(precinct.id)}
                         onDblClick={this.handleDblClick}
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
@@ -287,7 +395,7 @@ class Edit extends React.Component {
                   })}
                 </FeatureGroup>
                 {/* <FeatureGroup>
-                  {ky.features.map(f => {
+                  {ky.features.map((f) => {
                     return (
                       <GeoJSON
                         key={f.properties.id}
@@ -303,7 +411,7 @@ class Edit extends React.Component {
                       </GeoJSON>
                     );
                   })}
-                  {la.features.map(f => {
+                  {la.features.map((f) => {
                     return (
                       <GeoJSON
                         key={f.properties.id}
@@ -319,7 +427,7 @@ class Edit extends React.Component {
                       </GeoJSON>
                     );
                   })}
-                  {sc.features.map(f => {
+                  {sc.features.map((f) => {
                     return (
                       <GeoJSON
                         key={f.properties.id}
