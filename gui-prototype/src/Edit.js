@@ -92,23 +92,23 @@ class Edit extends React.Component {
       sidebarOpen: false,
       currPrecinct: 0,
       precincts: [
-        {
-          id: 1,
-          coordinates: [
-            [
-              [37, -109.05],
-              [41, -109.03],
-              [41, -102.05],
-              [37, -102.04]
-            ],
-            [
-              [37.29, -108.58],
-              [40.71, -108.58],
-              [40.71, -102.5],
-              [37.29, -102.5]
-            ]
-          ]
-        }
+        // {
+        //   id: 1,
+        //   coordinates: [
+        //     [
+        //       [37, -109.05],
+        //       [41, -109.03],
+        //       [41, -102.05],
+        //       [37, -102.04]
+        //     ],
+        //     [
+        //       [37.29, -108.58],
+        //       [40.71, -108.58],
+        //       [40.71, -102.5],
+        //       [37.29, -102.5]
+        //     ]
+        //   ]
+        // }
       ]
     };
   }
@@ -166,39 +166,40 @@ class Edit extends React.Component {
     //     "Content-Type": "application/json"
     //   },
     //   body: JSON.stringify({
-    //     districtId: "1",
-    //     countyId: "1",
-    //     stateId: "1",
-    //     canonicalName: "foo-bar",
-    //     population: "22",
-    //     ethnicityMap: {
-    //       WHITE: "199",
-    //       AFRICAN_AMERICAN: "100",
-    //       ASIAN_PACIFIC: "200",
-    //       HISPANIC: "300",
-    //       NATIVE: "400",
-    //       OTHER: "200"
+    //     "districtId": "1",
+    //     "countyId": "1",
+    //     "stateId": "1",
+    //     "canonicalName": "foo-bar",
+    //     "population": 22,
+
+    //     "ethnicityMap": {
+    //       "WHITE": 199,
+    //       "AFRICAN_AMERICAN": 100,
+    //       "ASIAN_PACIFIC": 200,
+    //       "HISPANIC": 300,
+    //       "NATIVE": 400,
+    //       "OTHER": 200
     //     },
-    //     electionMap: {
-    //       CONGRESSIONAL_16_REP: "10",
-    //       CONGRESSIONAL_18_REP: "200",
-    //       PRESIDENTIAL_16_REP: "300",
-    //       CONGRESSIONAL_16_DEM: "100",
-    //       CONGRESSIONAL_18_DEM: "200",
-    //       PRESIDENTIAL_16_DEM: "300"
+    //     "electionMap": {
+    //       "CONGRESSIONAL_16_REP": 10,
+    //       "CONGRESSIONAL_18_REP": 200,
+    //       "PRESIDENTIAL_16_REP": 300,
+    //       "CONGRESSIONAL_16_DEM": 100,
+    //       "CONGRESSIONAL_18_DEM": 200,
+    //       "PRESIDENTIAL_16_DEM": 300
     //     },
-    //     adjacentPrecinctIds: [],
-    //     logBag: {
+    //     "adjacentPrecinctIds": [],
+    //     "logBag": {
     //       "1": "i dunno what i'm doing",
     //       "2": "the integer key is the id for each comment"
     //     },
-    //     ghost: false,
-    //     coordinates: [
+    //     "ghost": false,
+    //     "coordinates": [
     //       [
-    //         [37, -109.05],
-    //         [41, -109.03],
-    //         [41, -102.05],
-    //         [37, -102.04]
+    //         [37.1, -109.05],
+    //         [41.1, -109.03],
+    //         [41.1, -102.05],
+    //         [37.11, -102.04]
     //       ],
     //       [
     //         [37.29, -108.58],
@@ -223,34 +224,34 @@ class Edit extends React.Component {
     //     "Content-Type": "application/json"
     //   },
     //   body: JSON.stringify({
-    //     districtId: "1",
-    //     countyId: "1",
-    //     stateId: "1",
-    //     canonicalName: "baz-foo",
-    //     population: "22",
-    //     ethnicityMap: {
-    //       WHITE: "199",
-    //       AFRICAN_AMERICAN: "100",
-    //       ASIAN_PACIFIC: "200",
-    //       HISPANIC: "300",
-    //       NATIVE: "400",
-    //       OTHER: "200"
+    //     "districtId": "1",
+    //     "countyId": "1",
+    //     "stateId": "1",
+    //     "canonicalName": "baz-foo",
+    //     "population": 22,
+    //     "ethnicityMap": {
+    //       "WHITE": 199,
+    //       "AFRICAN_AMERICAN": 100,
+    //       "ASIAN_PACIFIC": 200,
+    //       "HISPANIC": 300,
+    //       "NATIVE": 400,
+    //       "OTHER": 200
     //     },
-    //     electionMap: {
-    //       CONGRESSIONAL_16_REP: "10",
-    //       CONGRESSIONAL_18_REP: "200",
-    //       PRESIDENTIAL_16_REP: "300",
-    //       CONGRESSIONAL_16_DEM: "100",
-    //       CONGRESSIONAL_18_DEM: "200",
-    //       PRESIDENTIAL_16_DEM: "300"
+    //     "electionMap": {
+    //       "CONGRESSIONAL_16_REP": 10,
+    //       "CONGRESSIONAL_18_REP": 200,
+    //       "PRESIDENTIAL_16_REP": 300,
+    //       "CONGRESSIONAL_16_DEM": 100,
+    //       "CONGRESSIONAL_18_DEM": 200,
+    //       "PRESIDENTIAL_16_DEM": 300
     //     },
-    //     adjacentPrecinctIds: [],
-    //     logBag: {
+    //     "adjacentPrecinctIds": [],
+    //     "logBag": {
     //       "1": "something went wrong",
     //       "2": "the integer key is the id for each comment"
     //     },
-    //     ghost: false,
-    //     coordinates: [
+    //     "ghost": false,
+    //     "coordinates": [
     //       [
     //         [41, -111.03],
     //         [45, -111.04],
@@ -271,28 +272,33 @@ class Edit extends React.Component {
 
     fetch("api/precinct/all")
       .then((res) => res.json())
-      .then((result) => {
-        console.log(result);
-        this.setState((prevState) => ({
-          // precincts: [...prevState.precincts, { precincts: result.precincts }]
-        }));
+      .then((data) => {
+        // console.log(data);
+        data.map((currData) =>
+          this.setState({
+            precincts: [
+              ...this.state.precincts,
+              { id: currData.id, coordinates: currData.coordinates }
+            ]
+          })
+        );
       });
   }
 
   render() {
     const position = [this.state.latitude, this.state.longitude];
-    this.state.precincts.push({
-      id: 2,
-      coordinates: [
-        [
-          [41, -111.03],
-          [45, -111.04],
-          [46, -107.05],
-          [45, -104.05],
-          [41, -104.05]
-        ]
-      ]
-    });
+    // this.state.precincts.push({
+    //   id: 2,
+    //   coordinates: [
+    //     [
+    //       [41, -111.03],
+    //       [45, -111.04],
+    //       [46, -107.05],
+    //       [45, -104.05],
+    //       [41, -104.05]
+    //     ]
+    //   ]
+    // });
     return (
       <Styles>
         <Menu
