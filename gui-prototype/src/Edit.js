@@ -5,19 +5,9 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Table from "react-bootstrap/Table";
-import {
-  Map,
-  TileLayer,
-  GeoJSON,
-  FeatureGroup,
-  Tooltip,
-  Polygon
-} from "react-leaflet";
+import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
 import { slide as Menu } from "react-burger-menu";
 import styled, { keyframes } from "styled-components";
-// import ky from "./data/Kentucky.json";
-// import la from "./data/Louisiana.json";
-// import sc from "./data/SouthCarolina.json";
 
 const Styles = styled.div`
   .nav {
@@ -86,30 +76,23 @@ class Edit extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      latitude: 34,
-      longitude: -85,
+      latitude: 41.5,
+      longitude: -105,
+      // latitude: 34,
+      // longitude: -85,
       zoom: 6,
       sidebarOpen: false,
-      currPrecinct: 0,
-      precincts: [
-        // {
-        //   id: 1,
-        //   coordinates: [
-        //     [
-        //       [37, -109.05],
-        //       [41, -109.03],
-        //       [41, -102.05],
-        //       [37, -102.04]
-        //     ],
-        //     [
-        //       [37.29, -108.58],
-        //       [40.71, -108.58],
-        //       [40.71, -102.5],
-        //       [37.29, -102.5]
-        //     ]
-        //   ]
-        // }
-      ]
+      currPrecinct: {
+        id: null,
+        countyId: null,
+        canonicalName: null,
+        population: null,
+        ghost: null,
+        stateId: null,
+        districtId: null
+        // TODO: Add more properties
+      },
+      precincts: []
     };
   }
 
@@ -122,10 +105,6 @@ class Edit extends React.Component {
   //   };
   // }
 
-  displayPrecinctData() {
-    return this.state.currPrecinct;
-  }
-
   handleMouseOver(e) {
     e.target.openTooltip();
   }
@@ -135,7 +114,24 @@ class Edit extends React.Component {
   }
 
   handleClick(id) {
-    this.setState({ currPrecinct: id, sidebarOpen: true });
+    fetch("api/precinct/" + id)
+      .then((res) => res.json())
+      .then((data) => {
+        // TODO: Remove this line later
+        console.log(data);
+        this.setState({
+          currPrecinct: {
+            id: data.id,
+            countyId: data.countyId,
+            canonicalName: data.canonicalName,
+            population: data.population,
+            ghost: data.ghost,
+            stateId: data.stateId,
+            districtId: data.districtId
+          }
+        });
+      });
+    this.setState(() => ({ sidebarOpen: true }));
   }
 
   handleDblClick() {}
@@ -160,120 +156,11 @@ class Edit extends React.Component {
   }
 
   componentDidMount() {
-    // fetch("api/precinct", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json"
-    //   },
-    //   body: JSON.stringify({
-    //     "districtId": "1",
-    //     "countyId": "1",
-    //     "stateId": "1",
-    //     "canonicalName": "foo-bar",
-    //     "population": 22,
-
-    //     "ethnicityMap": {
-    //       "WHITE": 199,
-    //       "AFRICAN_AMERICAN": 100,
-    //       "ASIAN_PACIFIC": 200,
-    //       "HISPANIC": 300,
-    //       "NATIVE": 400,
-    //       "OTHER": 200
-    //     },
-    //     "electionMap": {
-    //       "CONGRESSIONAL_16_REP": 10,
-    //       "CONGRESSIONAL_18_REP": 200,
-    //       "PRESIDENTIAL_16_REP": 300,
-    //       "CONGRESSIONAL_16_DEM": 100,
-    //       "CONGRESSIONAL_18_DEM": 200,
-    //       "PRESIDENTIAL_16_DEM": 300
-    //     },
-    //     "adjacentPrecinctIds": [],
-    //     "logBag": {
-    //       "1": "i dunno what i'm doing",
-    //       "2": "the integer key is the id for each comment"
-    //     },
-    //     "ghost": false,
-    //     "coordinates": [
-    //       [
-    //         [37.1, -109.05],
-    //         [41.1, -109.03],
-    //         [41.1, -102.05],
-    //         [37.11, -102.04]
-    //       ],
-    //       [
-    //         [37.29, -108.58],
-    //         [40.71, -108.58],
-    //         [40.71, -102.5],
-    //         [37.29, -102.5]
-    //       ]
-    //     ]
-    //   })
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log("Success:", data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
-
-    // fetch("api/precinct", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json"
-    //   },
-    //   body: JSON.stringify({
-    //     "districtId": "1",
-    //     "countyId": "1",
-    //     "stateId": "1",
-    //     "canonicalName": "baz-foo",
-    //     "population": 22,
-    //     "ethnicityMap": {
-    //       "WHITE": 199,
-    //       "AFRICAN_AMERICAN": 100,
-    //       "ASIAN_PACIFIC": 200,
-    //       "HISPANIC": 300,
-    //       "NATIVE": 400,
-    //       "OTHER": 200
-    //     },
-    //     "electionMap": {
-    //       "CONGRESSIONAL_16_REP": 10,
-    //       "CONGRESSIONAL_18_REP": 200,
-    //       "PRESIDENTIAL_16_REP": 300,
-    //       "CONGRESSIONAL_16_DEM": 100,
-    //       "CONGRESSIONAL_18_DEM": 200,
-    //       "PRESIDENTIAL_16_DEM": 300
-    //     },
-    //     "adjacentPrecinctIds": [],
-    //     "logBag": {
-    //       "1": "something went wrong",
-    //       "2": "the integer key is the id for each comment"
-    //     },
-    //     "ghost": false,
-    //     "coordinates": [
-    //       [
-    //         [41, -111.03],
-    //         [45, -111.04],
-    //         [46, -107.05],
-    //         [45, -104.05],
-    //         [41, -104.05]
-    //       ]
-    //     ]
-    //   })
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log("Success:", data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
-
     fetch("api/precinct/all")
       .then((res) => res.json())
       .then((data) => {
-        // console.log(data);
+        // TODO: Remove this line later
+        console.log(data);
         data.map((currData) =>
           this.setState({
             precincts: [
@@ -287,18 +174,6 @@ class Edit extends React.Component {
 
   render() {
     const position = [this.state.latitude, this.state.longitude];
-    // this.state.precincts.push({
-    //   id: 2,
-    //   coordinates: [
-    //     [
-    //       [41, -111.03],
-    //       [45, -111.04],
-    //       [46, -107.05],
-    //       [45, -104.05],
-    //       [41, -104.05]
-    //     ]
-    //   ]
-    // });
     return (
       <Styles>
         <Menu
@@ -309,8 +184,8 @@ class Edit extends React.Component {
           isOpen={this.state.sidebarOpen}
           onStateChange={(state) => this.handleStateChange(state)}
         >
-          <h3>{this.displayPrecinctData()}</h3>
-          <h5>Test County, Test</h5>
+          <h3>{"Precinct Name: " + this.state.currPrecinct.canonicalName}</h3>
+          <h5>{"Precinct ID: " + this.state.currPrecinct.id}</h5>
           <Table striped bordered hover size="sm">
             <thead>
               <tr>
@@ -322,7 +197,7 @@ class Edit extends React.Component {
             </thead>
             <tbody>
               <tr>
-                <td>0</td>
+                <td>{this.state.currPrecinct.population}</td>
                 <td>0</td>
                 <td>0</td>
                 <td>0</td>
@@ -400,56 +275,6 @@ class Edit extends React.Component {
                     );
                   })}
                 </FeatureGroup>
-                {/* <FeatureGroup>
-                  {ky.features.map((f) => {
-                    return (
-                      <GeoJSON
-                        key={f.properties.id}
-                        data={f}
-                        style={this.getStyle}
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                        // onClick={this.handleClick}
-                      >
-                        <Tooltip>
-                          <b>{"Precinct " + f.properties.name}</b>
-                        </Tooltip>
-                      </GeoJSON>
-                    );
-                  })}
-                  {la.features.map((f) => {
-                    return (
-                      <GeoJSON
-                        key={f.properties.id}
-                        data={f}
-                        style={this.getStyle}
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                        // onClick={this.handleClick}
-                      >
-                        <Tooltip>
-                          <b>{"Precinct " + f.properties.name}</b>
-                        </Tooltip>
-                      </GeoJSON>
-                    );
-                  })}
-                  {sc.features.map((f) => {
-                    return (
-                      <GeoJSON
-                        key={f.properties.id}
-                        data={f}
-                        style={this.getStyle}
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                        // onClick={this.handleClick}
-                      >
-                        <Tooltip>
-                          <b>{"Precinct " + f.properties.name}</b>
-                        </Tooltip>
-                      </GeoJSON>
-                    );
-                  })}
-                </FeatureGroup> */}
               </Map>
             </Col>
           </Row>
