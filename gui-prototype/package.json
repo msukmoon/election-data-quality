@@ -10,6 +10,8 @@
     "leaflet": "^1.6.0",
     "react": "^16.13.0",
     "react-bootstrap": "^1.0.0-beta.17",
+    "react-bootstrap-table-next": "^4.0.1",
+    "react-bootstrap-table2-editor": "^1.4.0",
     "react-burger-menu": "^2.6.13",
     "react-dom": "^16.13.0",
     "react-leaflet": "^2.6.1",

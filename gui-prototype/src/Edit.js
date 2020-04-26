@@ -4,9 +4,11 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import Table from "react-bootstrap/Table";
 import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
 import { slide as Menu } from "react-burger-menu";
+import BootstrapTable from "react-bootstrap-table-next";
+import cellEditFactory from "react-bootstrap-table2-editor";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import styled, { keyframes } from "styled-components";
 
 const Styles = styled.div`
@@ -76,34 +78,69 @@ class Edit extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      latitude: 41.5,
-      longitude: -105,
-      // latitude: 34,
-      // longitude: -85,
-      zoom: 6,
+      latitude: 38.85,
+      longitude: -84.35,
+      zoom: 10,
       sidebarOpen: false,
       currPrecinct: {
-        id: null,
-        countyId: null,
-        canonicalName: null,
-        population: null,
-        ghost: null,
+        precinctId: null,
+        districtId: null,
         stateId: null,
-        districtId: null
+        canonicalName: null,
+        demographicData: [{ population: null }],
+        electionData: [
+          {
+            election: "2016 Presidential",
+            demVotes: null,
+            repVotes: null
+          },
+          {
+            election: "2016 Congressional",
+            demVotes: null,
+            repVotes: null
+          },
+          {
+            election: "2018 Congressional",
+            demVotes: null,
+            repVotes: null
+          }
+        ],
+        ethnicityData: [
+          {
+            ethnicity: "White",
+            population: null
+          },
+          {
+            ethnicity: "Black or African American",
+            population: null
+          },
+          {
+            ethnicity: "Asian or Asian American",
+            population: null
+          },
+          {
+            ethnicity: "American Indian",
+            population: null
+          },
+          {
+            ethnicity: "Hispanic or Latino",
+            population: null
+          }
+        ],
+        ghost: null,
+        multipleBorder: null
         // TODO: Add more properties
       },
+      logBag: [
+        {
+          id: null,
+          category: null,
+          comment: null
+        }
+      ],
       precincts: []
     };
   }
-
-  // getStyle() {
-  //   return {
-  //     color: "#102027",
-  //     weight: 1,
-  //     fillOpacity: 0.5,
-  //     fillColor: "#fff9c4",
-  //   };
-  // }
 
   handleMouseOver(e) {
     e.target.openTooltip();
@@ -114,20 +151,48 @@ class Edit extends React.Component {
   }
 
   handleClick(id) {
+    const electionDataCopy = [...this.state.currPrecinct.electionData];
+    const demographicDataCopy = [...this.state.currPrecinct.demographicData];
     fetch("api/precinct/" + id)
       .then((res) => res.json())
       .then((data) => {
-        // TODO: Remove this line later
-        console.log(data);
+        console.log(data); // TODO: Remove this line later
+        electionDataCopy[0] = {
+          election: "2016 Presidential",
+          demVotes: data.electionData.PRESIDENTIAL_16_DEM,
+          repVotes: data.electionData.PRESIDENTIAL_16_REP
+        };
+        electionDataCopy[1] = {
+          election: "2016 Congressional",
+          demVotes: data.electionData.CONGRESSIONAL_16_DEM,
+          repVotes: data.electionData.CONGRESSIONAL_16_REP
+        };
+        electionDataCopy[2] = {
+          election: "2018 Congressional",
+          demVotes: data.electionData.CONGRESSIONAL_18_DEM,
+          repVotes: data.electionData.CONGRESSIONAL_18_REP
+        };
+        demographicDataCopy[0] = { population: data.population };
         this.setState({
           currPrecinct: {
-            id: data.id,
-            countyId: data.countyId,
-            canonicalName: data.canonicalName,
-            population: data.population,
-            ghost: data.ghost,
+            precinctId: data.precinctId,
+            districtId: data.districtId,
             stateId: data.stateId,
-            districtId: data.districtId
+            canonicalName: data.canonicalName,
+            demographicData: demographicDataCopy,
+            electionData: electionDataCopy,
+            ethnicityData: null,
+            // logBag: [
+            //   ...this.state.currPrecinct.logBag,
+            //   {
+            //     id: null,
+            //     category: null,
+            //     comment: null
+            //   }
+            // ],
+            ghost: data.ghost,
+            multipleBorder: data.multipleBorder
+            // TODO: Add more properties
           }
         });
       });
@@ -159,13 +224,15 @@ class Edit extends React.Component {
     fetch("api/precinct/all")
       .then((res) => res.json())
       .then((data) => {
-        // TODO: Remove this line later
-        console.log(data);
+        console.log(data); // TODO: Remove this line later
         data.map((currData) =>
           this.setState({
             precincts: [
               ...this.state.precincts,
-              { id: currData.id, coordinates: currData.coordinates }
+              {
+                precinctId: currData.precinctId,
+                coordinates: JSON.parse(currData.coordinates)
+              }
             ]
           })
         );
@@ -174,36 +241,184 @@ class Edit extends React.Component {
 
   render() {
     const position = [this.state.latitude, this.state.longitude];
+    const electionTableColumns = [
+      {
+        dataField: "election",
+        text: "Election"
+      },
+      {
+        dataField: "demVotes",
+        text: "Democratic Votes"
+      },
+      {
+        dataField: "repVotes",
+        text: "Republican Votes"
+      }
+    ];
+    const demographicTableColumns = [
+      {
+        dataField: "population",
+        text: "Population (Precinct Level)"
+      }
+    ];
+    const ethnicityTableColumns = [
+      {
+        dataField: "ethnicity",
+        text: "Ethnicity"
+      },
+      {
+        dataField: "population",
+        text: "Population (County Level)"
+      }
+    ];
+    const logTableColumns = [
+      {
+        dataField: "id",
+        text: "Log ID"
+      },
+      {
+        dataField: "category",
+        text: "Error Category"
+      },
+      {
+        dataField: "comment",
+        text: "User Comment"
+      }
+    ];
+    const dataSourceTableColumns = [
+      {
+        dataField: "name",
+        text: "Source Name"
+      },
+      {
+        dataField: "category",
+        text: "Data Category"
+      },
+      {
+        dataField: "url",
+        text: "Source URL"
+      }
+    ];
     return (
       <Styles>
         <Menu
           right
-          width={"50%"}
+          width={"60%"}
           menuClassName={"menu-right"}
           customBurgerIcon={false}
           isOpen={this.state.sidebarOpen}
           onStateChange={(state) => this.handleStateChange(state)}
         >
-          <h3>{"Precinct Name: " + this.state.currPrecinct.canonicalName}</h3>
-          <h5>{"Precinct ID: " + this.state.currPrecinct.id}</h5>
-          <Table striped bordered hover size="sm">
-            <thead>
-              <tr>
-                <th>Population</th>
-                <th>Registered</th>
-                <th>Democrats</th>
-                <th>Republicans</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{this.state.currPrecinct.population}</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-            </tbody>
-          </Table>
+          <Container fluid className="px-0">
+            <Row className="pb-2">
+              <Col>
+                <h2>21-117-B121</h2>
+              </Col>
+            </Row>
+            <Row className="pb-1">
+              <Col>
+                <h4>Election Data</h4>
+              </Col>
+            </Row>
+            <Row className="pb-2">
+              <Col>
+                <BootstrapTable
+                  striped
+                  hover
+                  condensed
+                  keyField="election"
+                  data={this.state.currPrecinct.electionData}
+                  columns={electionTableColumns}
+                  cellEdit={cellEditFactory({
+                    mode: "click",
+                    blurToSave: true
+                  })}
+                />
+              </Col>
+            </Row>
+            <Row className="pb-1">
+              <Col>
+                <h4>Demographic Data</h4>
+              </Col>
+            </Row>
+            <Row className="pb-1">
+              <Col>
+                <BootstrapTable
+                  striped
+                  hover
+                  condensed
+                  keyField="population"
+                  data={this.state.currPrecinct.demographicData}
+                  columns={demographicTableColumns}
+                  cellEdit={cellEditFactory({
+                    mode: "click",
+                    blurToSave: true
+                  })}
+                />
+              </Col>
+            </Row>
+            <Row className="pb-2">
+              <Col>
+                <BootstrapTable
+                  striped
+                  hover
+                  condensed
+                  keyField="ethnicity"
+                  data={[]}
+                  columns={ethnicityTableColumns}
+                  noDataIndication="Data Not Available for Now"
+                  cellEdit={cellEditFactory({
+                    mode: "click",
+                    blurToSave: true
+                  })}
+                />
+              </Col>
+            </Row>
+            <Row className="pb-1">
+              <Col>
+                <h4>Corrections Log</h4>
+              </Col>
+            </Row>
+            <Row className="pb-2">
+              <Col>
+                <BootstrapTable
+                  striped
+                  hover
+                  condensed
+                  keyField="id"
+                  data={[]}
+                  columns={logTableColumns}
+                  noDataIndication="Data Not Available for Now"
+                  cellEdit={cellEditFactory({
+                    mode: "click",
+                    blurToSave: true
+                  })}
+                />
+              </Col>
+            </Row>
+            <Row className="pb-1">
+              <Col>
+                <h4>Data Sources</h4>
+              </Col>
+            </Row>
+            <Row className="pb-5">
+              <Col>
+                <BootstrapTable
+                  striped
+                  hover
+                  condensed
+                  keyField="name"
+                  data={[]}
+                  columns={dataSourceTableColumns}
+                  noDataIndication="Data Not Available for Now"
+                  cellEdit={cellEditFactory({
+                    mode: "click",
+                    blurToSave: true
+                  })}
+                />
+              </Col>
+            </Row>
+          </Container>
         </Menu>
         <Container fluid className="px-0">
           <Row>
@@ -263,13 +478,13 @@ class Edit extends React.Component {
                         weight={1}
                         fillOpacity={0.5}
                         fillColor={"#fff9c4"}
-                        onClick={() => this.handleClick(precinct.id)}
+                        onClick={() => this.handleClick(precinct.precinctId)}
                         onDblClick={this.handleDblClick}
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
                       >
                         <Tooltip>
-                          <b>{"Precinct ID: " + precinct.id}</b>
+                          <b>{"Canonical Name: " + precinct.canonicalName}</b>
                         </Tooltip>
                       </Polygon>
                     );
