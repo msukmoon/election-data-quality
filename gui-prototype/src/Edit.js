@@ -84,9 +84,13 @@ class Edit extends React.Component {
       sidebarOpen: false,
       currPrecinct: {
         precinctId: null,
-        districtId: null,
+        countyId: null,
         stateId: null,
         canonicalName: null,
+        ghost: null,
+        multipleBorder: null,
+        adjacentPrecinctIds: [],
+        enclosingPrecinctIds: [],
         demographicData: [{ population: null }],
         electionData: [
           {
@@ -105,39 +109,50 @@ class Edit extends React.Component {
             repVotes: null
           }
         ],
-        ethnicityData: [
+        logBag: [
           {
-            ethnicity: "White",
-            population: null
-          },
-          {
-            ethnicity: "Black or African American",
-            population: null
-          },
-          {
-            ethnicity: "Asian or Asian American",
-            population: null
-          },
-          {
-            ethnicity: "American Indian",
-            population: null
-          },
-          {
-            ethnicity: "Hispanic or Latino",
-            population: null
+            id: null,
+            category: null,
+            comment: null
           }
         ],
-        ghost: null,
-        multipleBorder: null
+        county: {
+          id: null,
+          canonicalName: null,
+          ethnicityData: [
+            {
+              ethnicity: "White",
+              population: null
+            },
+            {
+              ethnicity: "Black or African American",
+              population: null
+            },
+            {
+              ethnicity: "Asian or Asian American",
+              population: null
+            },
+            {
+              ethnicity: "American Indian",
+              population: null
+            },
+            {
+              ethnicity: "Hispanic or Latino",
+              population: null
+            },
+            {
+              ethnicity: "Others",
+              population: null
+            }
+          ],
+          state: {
+            id: null,
+            canonicalName: null
+          }
+        },
+        coordinates: []
         // TODO: Add more properties
       },
-      logBag: [
-        {
-          id: null,
-          category: null,
-          comment: null
-        }
-      ],
       precincts: []
     };
   }
@@ -151,12 +166,14 @@ class Edit extends React.Component {
   }
 
   handleClick(id) {
-    const electionDataCopy = [...this.state.currPrecinct.electionData];
     const demographicDataCopy = [...this.state.currPrecinct.demographicData];
+    const electionDataCopy = [...this.state.currPrecinct.electionData];
+    const ethnicityDataCopy = [...this.state.currPrecinct.county.ethnicityData];
     fetch("api/precinct/" + id)
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // TODO: Remove this line later
+        demographicDataCopy[0] = { population: data.population };
         electionDataCopy[0] = {
           election: "2016 Presidential",
           demVotes: data.electionData.PRESIDENTIAL_16_DEM,
@@ -172,16 +189,40 @@ class Edit extends React.Component {
           demVotes: data.electionData.CONGRESSIONAL_18_DEM,
           repVotes: data.electionData.CONGRESSIONAL_18_REP
         };
-        demographicDataCopy[0] = { population: data.population };
+        ethnicityDataCopy[0] = {
+          ethnicity: "White",
+          population: data.county.ethnicityData.WHITE
+        };
+        ethnicityDataCopy[1] = {
+          ethnicity: "Black or African American",
+          population: data.county.ethnicityData.AFRICAN_AMERICAN
+        };
+        ethnicityDataCopy[2] = {
+          ethnicity: "Asian or Asian American",
+          population: data.county.ethnicityData.ASIAN_PACIFIC
+        };
+        ethnicityDataCopy[3] = {
+          ethnicity: "American Indian",
+          population: data.county.ethnicityData.NATIVE
+        };
+        ethnicityDataCopy[4] = {
+          ethnicity: "Hispanic or Latino",
+          population: data.county.ethnicityData.HISPANIC
+        };
+        ethnicityDataCopy[5] = {
+          ethnicity: "Others",
+          population: data.county.ethnicityData.OTHER
+        };
         this.setState({
           currPrecinct: {
             precinctId: data.precinctId,
-            districtId: data.districtId,
+            countyId: data.countyId,
             stateId: data.stateId,
             canonicalName: data.canonicalName,
+            ghost: data.ghost,
+            multipleBorder: data.multipleBorder,
             demographicData: demographicDataCopy,
             electionData: electionDataCopy,
-            ethnicityData: null,
             // logBag: [
             //   ...this.state.currPrecinct.logBag,
             //   {
@@ -190,8 +231,9 @@ class Edit extends React.Component {
             //     comment: null
             //   }
             // ],
-            ghost: data.ghost,
-            multipleBorder: data.multipleBorder
+            county: {
+              ethnicityData: ethnicityDataCopy
+            }
             // TODO: Add more properties
           }
         });
@@ -218,6 +260,28 @@ class Edit extends React.Component {
     else if (id === 3) {
       this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
     }
+  }
+
+  handleTableChange(oldValue, newValue, row) {
+    // TODO: Remove these lines below later
+    console.log(oldValue);
+    console.log(newValue);
+    console.log(row);
+
+    // fetch("api/precinct", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify()
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log("Success:", data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
   }
 
   componentDidMount() {
@@ -331,7 +395,8 @@ class Edit extends React.Component {
                   columns={electionTableColumns}
                   cellEdit={cellEditFactory({
                     mode: "click",
-                    blurToSave: true
+                    blurToSave: true,
+                    afterSaveCell: this.handleTableChange
                   })}
                 />
               </Col>
@@ -364,9 +429,8 @@ class Edit extends React.Component {
                   hover
                   condensed
                   keyField="ethnicity"
-                  data={[]}
+                  data={this.state.currPrecinct.county.ethnicityData}
                   columns={ethnicityTableColumns}
-                  noDataIndication="Data Not Available for Now"
                   cellEdit={cellEditFactory({
                     mode: "click",
                     blurToSave: true
@@ -484,7 +548,7 @@ class Edit extends React.Component {
                         onMouseOut={this.handleMouseOut}
                       >
                         <Tooltip>
-                          <b>{"Canonical Name: " + precinct.canonicalName}</b>
+                          <b>{precinct.precinctId}</b>
                         </Tooltip>
                       </Polygon>
                     );
