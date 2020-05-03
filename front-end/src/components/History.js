@@ -9,22 +9,19 @@ const Styles = styled.div`
   },
 `;
 
-function About() {
+function History() {
   return (
     <Styles>
       <Jumbotron fluid className="px-0">
         <Container>
-          <h1>About us</h1>
+          <h1>Corrections History</h1>
         </Container>
       </Jumbotron>
       <Container>
-        <p>
-          We are Team Cyclones from Stony Brook University's Spring 2020 CSE
-          416-01 Class.
-        </p>
+        <p>Corrections log will go here.</p>
       </Container>
     </Styles>
   );
 }
 
-export default About;
+export default History;

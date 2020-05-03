@@ -71,7 +71,7 @@ const Styles = styled.div`
   }
 `;
 
-class Edit extends React.Component {
+class MapView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -615,4 +615,4 @@ class Edit extends React.Component {
   }
 }
 
-export default Edit;
+export default MapView;
