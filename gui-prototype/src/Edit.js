@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -9,7 +9,7 @@ import { slide as Menu } from "react-burger-menu";
 import BootstrapTable from "react-bootstrap-table-next";
 import cellEditFactory from "react-bootstrap-table2-editor";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 
 const Styles = styled.div`
   .nav {
@@ -41,10 +41,7 @@ const Styles = styled.div`
     background: black;
   }
 
-  /*
-  Sidebar wrapper styles
-  Note: Beware of modifying this element as it can break the animations - you should not need to touch it in most cases
-  */
+  /* Sidebar wrapper styles  */
   .bm-menu-wrap {
     position: fixed;
     height: 100%;
@@ -109,13 +106,7 @@ class Edit extends React.Component {
             repVotes: null
           }
         ],
-        logBag: [
-          {
-            id: null,
-            category: null,
-            comment: null
-          }
-        ],
+        logBag: [],
         county: {
           id: null,
           canonicalName: null,
@@ -137,7 +128,7 @@ class Edit extends React.Component {
               population: null
             },
             {
-              ethnicity: "Hispanic or Latino",
+              ethnicity: "Pacific Islander",
               population: null
             },
             {
@@ -165,56 +156,78 @@ class Edit extends React.Component {
     e.target.closeTooltip();
   }
 
-  handleClick(id) {
+  handleClick(e, id) {
+    // TODO: Change fill color of the selected state
+    const precinctsCopy = [...this.state.precincts];
+    const precinctsIndex = precinctsCopy.findIndex(
+      (el) => el.precinctId === id
+    );
+    precinctsCopy[precinctsIndex] = {
+      ...precinctsCopy[precinctsIndex],
+      fillColor: "#102027"
+    };
+    this.setState({ precincts: precinctsCopy });
+    // this.setState(prevState => ({
+    //   precincts: {
+    //     ...prevState.precincts,
+    //     fillColor: "#102027"
+    //   }
+    // }));
+    // e.target.setStyle({ fillColor: "#102027" });
+
+    // Modify map state
+    this.setState({ latitude: e.latlng.lat, longitude: e.latlng.lng }); // TODO: Update zoom
+
     const demographicDataCopy = [...this.state.currPrecinct.demographicData];
     const electionDataCopy = [...this.state.currPrecinct.electionData];
     const ethnicityDataCopy = [...this.state.currPrecinct.county.ethnicityData];
     fetch("api/precinct/" + id)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data); // TODO: Remove this line later
+        console.log(data); // DEBUG: Remove this line later
         demographicDataCopy[0] = { population: data.population };
         electionDataCopy[0] = {
-          election: "2016 Presidential",
+          ...electionDataCopy[0],
           demVotes: data.electionData.PRESIDENTIAL_16_DEM,
           repVotes: data.electionData.PRESIDENTIAL_16_REP
         };
         electionDataCopy[1] = {
-          election: "2016 Congressional",
+          ...electionDataCopy[1],
           demVotes: data.electionData.CONGRESSIONAL_16_DEM,
           repVotes: data.electionData.CONGRESSIONAL_16_REP
         };
         electionDataCopy[2] = {
-          election: "2018 Congressional",
+          ...electionDataCopy[2],
           demVotes: data.electionData.CONGRESSIONAL_18_DEM,
           repVotes: data.electionData.CONGRESSIONAL_18_REP
         };
         ethnicityDataCopy[0] = {
-          ethnicity: "White",
-          population: data.county.ethnicityData.WHITE
+          ...ethnicityDataCopy[0],
+          population: data.county.white
         };
         ethnicityDataCopy[1] = {
-          ethnicity: "Black or African American",
-          population: data.county.ethnicityData.AFRICAN_AMERICAN
+          ...ethnicityDataCopy[1],
+          population: data.county.africanAmer
         };
         ethnicityDataCopy[2] = {
-          ethnicity: "Asian or Asian American",
-          population: data.county.ethnicityData.ASIAN_PACIFIC
+          ...ethnicityDataCopy[2],
+          population: data.county.asian
         };
         ethnicityDataCopy[3] = {
-          ethnicity: "American Indian",
-          population: data.county.ethnicityData.NATIVE
+          ...ethnicityDataCopy[3],
+          population: data.county.nativeAmer
         };
         ethnicityDataCopy[4] = {
-          ethnicity: "Hispanic or Latino",
-          population: data.county.ethnicityData.HISPANIC
+          ...ethnicityDataCopy[4],
+          population: data.county.pasifika
         };
         ethnicityDataCopy[5] = {
-          ethnicity: "Others",
-          population: data.county.ethnicityData.OTHER
+          ...ethnicityDataCopy[5],
+          population: data.county.others
         };
         this.setState({
           currPrecinct: {
+            ...this.state.currPrecinct, // TODO: Remove this line later
             precinctId: data.precinctId,
             countyId: data.countyId,
             stateId: data.stateId,
@@ -223,6 +236,7 @@ class Edit extends React.Component {
             multipleBorder: data.multipleBorder,
             demographicData: demographicDataCopy,
             electionData: electionDataCopy,
+            // TODO: add logBag
             // logBag: [
             //   ...this.state.currPrecinct.logBag,
             //   {
@@ -248,26 +262,27 @@ class Edit extends React.Component {
   }
 
   handleStateSelect(id) {
-    // Kentucky is selected
+    // Selected Kentucky
     if (id === 1) {
       this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
     }
-    // Louisiana is selected
+    // Selected Louisiana
     else if (id === 2) {
       this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
     }
-    // South Carolina is selected
+    // Selected South Carolina
     else if (id === 3) {
       this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
     }
   }
 
   handleTableChange(oldValue, newValue, row) {
-    // TODO: Remove these lines below later
+    // DEBUG: Remove these lines below later
     console.log(oldValue);
     console.log(newValue);
     console.log(row);
 
+    // TODO: Make a POST request to the server with "api/precinct"
     // fetch("api/precinct", {
     //   method: "POST",
     //   headers: {
@@ -285,22 +300,24 @@ class Edit extends React.Component {
   }
 
   componentDidMount() {
-    fetch("api/precinct/all")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data); // TODO: Remove this line later
-        data.map((currData) =>
-          this.setState({
-            precincts: [
-              ...this.state.precincts,
-              {
-                precinctId: currData.precinctId,
-                coordinates: JSON.parse(currData.coordinates)
-              }
-            ]
-          })
-        );
-      });
+    // DEBUG
+    // fetch("api/precinct/all")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data); // DEBUG: Remove this line later
+    //     data.map((currData) =>
+    //       this.setState({
+    //         precincts: [
+    //           ...this.state.precincts,
+    //           {
+    //             precinctId: currData.precinctId,
+    //             fillColor: "#fff9c4",
+    //             coordinates: JSON.parse(currData.coordinates)
+    //           }
+    //         ]
+    //       })
+    //     );
+    //   });
   }
 
   render() {
@@ -363,6 +380,38 @@ class Edit extends React.Component {
         text: "Source URL"
       }
     ];
+    // DEBUG
+    // this.state.precincts.push({
+    //   precinctId: 1,
+    //   fillColor: "#fff9c4",
+    //   coordinates: [
+    //     [
+    //       [38.8, -84.5],
+    //       [38.9, -84.5],
+    //       [38.9, -84.4],
+    //       [38.8, -84.4]
+    //     ],
+    //     [
+    //       [38.825, -84.475],
+    //       [38.875, -84.475],
+    //       [38.875, -84.425],
+    //       [38.825, -84.425]
+    //     ]
+    //   ]
+    // });
+    // this.state.precincts.push({
+    //   precinctId: 2,
+    //   fillColor: "#fff9c4",
+    //   coordinates: [
+    //     [
+    //       [38.8, -84.4],
+    //       [38.9, -84.4],
+    //       [39.0, -84.3],
+    //       [38.9, -84.2],
+    //       [38.8, -84.2]
+    //     ]
+    //   ]
+    // });
     return (
       <Styles>
         <Menu
@@ -413,8 +462,9 @@ class Edit extends React.Component {
                   hover
                   condensed
                   keyField="population"
-                  data={this.state.currPrecinct.demographicData}
+                  data={[]}
                   columns={demographicTableColumns}
+                  noDataIndication="Data Not Available for Now"
                   cellEdit={cellEditFactory({
                     mode: "click",
                     blurToSave: true
@@ -541,8 +591,10 @@ class Edit extends React.Component {
                         color={"#102027"}
                         weight={1}
                         fillOpacity={0.5}
-                        fillColor={"#fff9c4"}
-                        onClick={() => this.handleClick(precinct.precinctId)}
+                        fillColor={precinct.fillColor}
+                        onClick={(e) =>
+                          this.handleClick(e, precinct.precinctId)
+                        }
                         onDblClick={this.handleDblClick}
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
