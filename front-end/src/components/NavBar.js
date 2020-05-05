@@ -24,7 +24,7 @@ function NavBar() {
   return (
     <Styles>
       <Navbar /* fixed="top" */ expand="lg">
-        <Navbar.Brand href="/">
+        <Navbar.Brand className="px-2" href="/">
           <img
             src={logo}
             alt="logo"
@@ -36,10 +36,16 @@ function NavBar() {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="mr-4">
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="/history">History</Nav.Link>
-            <Nav.Link href="/map">Map</Nav.Link>
+          <Nav>
+            <Nav.Link className="pr-2" href="/">
+              Home
+            </Nav.Link>
+            <Nav.Link className="px-3" href="/history">
+              History
+            </Nav.Link>
+            <Nav.Link className="pl-2" href="/map">
+              Map
+            </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Navbar>

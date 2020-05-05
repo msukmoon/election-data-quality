@@ -2,9 +2,14 @@ import React from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Nav from "react-bootstrap/Nav";
-import NavDropdown from "react-bootstrap/NavDropdown";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
+import Button from "react-bootstrap/Button";
+import Dropdown from "react-bootstrap/Dropdown";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import Form from "react-bootstrap/Form";
+import Card from "react-bootstrap/Card";
 import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
+import Control from "react-leaflet-control";
 import { slide as Menu } from "react-burger-menu";
 import BootstrapTable from "react-bootstrap-table-next";
 import cellEditFactory from "react-bootstrap-table2-editor";
@@ -12,21 +17,30 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import styled from "styled-components";
 
 const Styles = styled.div`
-  .nav {
-    background-color: #37474f;
+  .btn-flat {
+    color: white;
+    background-color: #62727b;
+    border-color: #102027;
+    font-size: 15px;
+
+    &:hover,
+    &:focus {
+      color: #102027;
+    }
   }
 
-  .nav-item .nav-link {
-    color: white;
+  .dropdown-item {
+    color: black;
+    font-size: 15px;
+  }
 
-    &:hover {
-      color: #9ea7aa;
-    }
+  .form-check {
+    font-size: 15px;
   }
 
   .leaflet-container {
     width: 100%;
-    height: 90vh;
+    height: 92vh;
   }
 
   // NOTE: helper classes below are from react-burger-menu library
@@ -381,37 +395,37 @@ class MapView extends React.Component {
       }
     ];
     // DEBUG
-    // this.state.precincts.push({
-    //   precinctId: 1,
-    //   fillColor: "#fff9c4",
-    //   coordinates: [
-    //     [
-    //       [38.8, -84.5],
-    //       [38.9, -84.5],
-    //       [38.9, -84.4],
-    //       [38.8, -84.4]
-    //     ],
-    //     [
-    //       [38.825, -84.475],
-    //       [38.875, -84.475],
-    //       [38.875, -84.425],
-    //       [38.825, -84.425]
-    //     ]
-    //   ]
-    // });
-    // this.state.precincts.push({
-    //   precinctId: 2,
-    //   fillColor: "#fff9c4",
-    //   coordinates: [
-    //     [
-    //       [38.8, -84.4],
-    //       [38.9, -84.4],
-    //       [39.0, -84.3],
-    //       [38.9, -84.2],
-    //       [38.8, -84.2]
-    //     ]
-    //   ]
-    // });
+    this.state.precincts.push({
+      precinctId: 1,
+      fillColor: "#fff9c4",
+      coordinates: [
+        [
+          [38.8, -84.5],
+          [38.9, -84.5],
+          [38.9, -84.4],
+          [38.8, -84.4]
+        ],
+        [
+          [38.825, -84.475],
+          [38.875, -84.475],
+          [38.875, -84.425],
+          [38.825, -84.425]
+        ]
+      ]
+    });
+    this.state.precincts.push({
+      precinctId: 2,
+      fillColor: "#fff9c4",
+      coordinates: [
+        [
+          [38.8, -84.4],
+          [38.9, -84.4],
+          [39.0, -84.3],
+          [38.9, -84.2],
+          [38.8, -84.2]
+        ]
+      ]
+    });
     return (
       <Styles>
         <Menu
@@ -537,51 +551,86 @@ class MapView extends React.Component {
         <Container fluid className="px-0">
           <Row>
             <Col>
-              <Nav variant="pills">
-                <Nav.Item>
-                  <Nav.Link eventKey="b1">Create Ghost</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="b2">Connect Precincts</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="b3">Highlight Neighbors</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="b4">Screenshot</Nav.Link>
-                </Nav.Item>
-                <NavDropdown title="State" id="basic-nav-dropdown">
-                  <NavDropdown.Item onClick={() => this.handleStateSelect(1)}>
-                    Kentucky
-                  </NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => this.handleStateSelect(2)}>
-                    Louisiana
-                  </NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => this.handleStateSelect(3)}>
-                    South Carolina
-                  </NavDropdown.Item>
-                </NavDropdown>
-                <NavDropdown title="Data" id="basic-nav-dropdown">
-                  <NavDropdown.Item /* onClick={} */>
-                    2016 Presidential
-                  </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={} */>
-                    2016 Congressional
-                  </NavDropdown.Item>
-                  <NavDropdown.Item /* onClick={} */>
-                    2018 Congressional
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </Nav>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Map center={position} zoom={this.state.zoom}>
+              <Map center={position} zoom={this.state.zoom} zoomControl={false}>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
+                <Control position="topleft">
+                  <ButtonGroup vertical>
+                    <DropdownButton
+                      as={ButtonGroup}
+                      id="bg-vertical-dropdown-1"
+                      drop="right"
+                      variant="flat"
+                      title="Select State"
+                    >
+                      <Dropdown.Item
+                        eventKey="1"
+                        onClick={() => this.handleStateSelect(1)}
+                      >
+                        Kentucky
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        eventKey="2"
+                        onClick={() => this.handleStateSelect(2)}
+                      >
+                        Louisiana
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        eventKey="3"
+                        onClick={() => this.handleStateSelect(3)}
+                      >
+                        South Carolina
+                      </Dropdown.Item>
+                    </DropdownButton>
+                    <DropdownButton
+                      as={ButtonGroup}
+                      id="bg-vertical-dropdown-2"
+                      drop="right"
+                      variant="flat"
+                      title="Select Election"
+                    >
+                      <Dropdown.Item eventKey="1" /* onClick={} */>
+                        2016 Presidential
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="2" /* onClick={} */>
+                        2016 Congressional
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="3" /* onClick={} */>
+                        2018 Congressional
+                      </Dropdown.Item>
+                    </DropdownButton>
+                    <Button variant="flat">Add Neighbor</Button>
+                    <Button variant="flat">Delete Neighbor</Button>
+                    <Button variant="flat">Merge Precincts</Button>
+                  </ButtonGroup>
+                </Control>
+                <Control position="bottomleft">
+                  <ButtonGroup vertical className="pb-2">
+                    <Button variant="flat">+</Button>
+                    <Button variant="flat">-</Button>
+                  </ButtonGroup>
+                  <Card>
+                    <Card.Body>
+                      <Form>
+                        <Form.Check
+                          type="switch"
+                          id="1"
+                          label="View National Park Boundaries"
+                          bsCustomPrefix="form-check"
+                        />
+                      </Form>
+                      <Form.Check
+                        className="pb-1"
+                        type="switch"
+                        id="2"
+                        label="View Congressional District Boundaries"
+                        bsCustomPrefix="form-check"
+                      />
+                    </Card.Body>
+                  </Card>
+                </Control>
                 <FeatureGroup>
                   {this.state.precincts.map((precinct) => {
                     return (
