@@ -9,38 +9,33 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
+import { EditControl } from "react-leaflet-draw";
 import Control from "react-leaflet-control";
 import { slide as Menu } from "react-burger-menu";
 import BootstrapTable from "react-bootstrap-table-next";
 import cellEditFactory from "react-bootstrap-table2-editor";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 import styled from "styled-components";
 
 const Styles = styled.div`
-  .btn-flat {
-    color: white;
-    background-color: #62727b;
-    border-color: #102027;
-    font-size: 15px;
-
-    &:hover,
-    &:focus {
-      color: #102027;
-    }
+  .btn-light {
+    border-color: black;
+    font-size: 12px;
   }
 
   .dropdown-item {
     color: black;
-    font-size: 15px;
+    font-size: 12px;
   }
 
   .form-check {
-    font-size: 15px;
+    font-size: 12px;
   }
 
   .leaflet-container {
     width: 100%;
-    height: 92vh;
+    height: 90vh;
   }
 
   // NOTE: helper classes below are from react-burger-menu library
@@ -158,7 +153,40 @@ class MapView extends React.Component {
         coordinates: []
         // TODO: Add more properties
       },
-      precincts: []
+      precincts: [
+        // DEBUG
+        {
+          precinctId: 1,
+          fillColor: "#fff9c4",
+          coordinates: [
+            [
+              [38.8, -84.5],
+              [38.9, -84.5],
+              [38.9, -84.4],
+              [38.8, -84.4]
+            ],
+            [
+              [38.825, -84.475],
+              [38.875, -84.475],
+              [38.875, -84.425],
+              [38.825, -84.425]
+            ]
+          ]
+        },
+        {
+          precinctId: 2,
+          fillColor: "#fff9c4",
+          coordinates: [
+            [
+              [38.8, -84.4],
+              [38.9, -84.4],
+              [39.0, -84.3],
+              [38.9, -84.2],
+              [38.8, -84.2]
+            ]
+          ]
+        }
+      ]
     };
   }
 
@@ -269,8 +297,6 @@ class MapView extends React.Component {
     this.setState(() => ({ sidebarOpen: true }));
   }
 
-  handleDblClick() {}
-
   handleStateChange(state) {
     this.setState({ sidebarOpen: state.isOpen });
   }
@@ -335,6 +361,7 @@ class MapView extends React.Component {
   }
 
   render() {
+    console.log(this.state.precincts);
     const position = [this.state.latitude, this.state.longitude];
     const electionTableColumns = [
       {
@@ -394,38 +421,6 @@ class MapView extends React.Component {
         text: "Source URL"
       }
     ];
-    // DEBUG
-    this.state.precincts.push({
-      precinctId: 1,
-      fillColor: "#fff9c4",
-      coordinates: [
-        [
-          [38.8, -84.5],
-          [38.9, -84.5],
-          [38.9, -84.4],
-          [38.8, -84.4]
-        ],
-        [
-          [38.825, -84.475],
-          [38.875, -84.475],
-          [38.875, -84.425],
-          [38.825, -84.425]
-        ]
-      ]
-    });
-    this.state.precincts.push({
-      precinctId: 2,
-      fillColor: "#fff9c4",
-      coordinates: [
-        [
-          [38.8, -84.4],
-          [38.9, -84.4],
-          [39.0, -84.3],
-          [38.9, -84.2],
-          [38.8, -84.2]
-        ]
-      ]
-    });
     return (
       <Styles>
         <Menu
@@ -551,18 +546,18 @@ class MapView extends React.Component {
         <Container fluid className="px-0">
           <Row>
             <Col>
-              <Map center={position} zoom={this.state.zoom} zoomControl={false}>
+              <Map center={position} zoom={this.state.zoom}>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
-                <Control position="topleft">
-                  <ButtonGroup vertical>
+                <Control position="bottomleft">
+                  <ButtonGroup vertical className="pb-2">
                     <DropdownButton
                       as={ButtonGroup}
                       id="bg-vertical-dropdown-1"
                       drop="right"
-                      variant="flat"
+                      variant="light"
                       title="Select State"
                     >
                       <Dropdown.Item
@@ -588,7 +583,7 @@ class MapView extends React.Component {
                       as={ButtonGroup}
                       id="bg-vertical-dropdown-2"
                       drop="right"
-                      variant="flat"
+                      variant="light"
                       title="Select Election"
                     >
                       <Dropdown.Item eventKey="1" /* onClick={} */>
@@ -601,15 +596,9 @@ class MapView extends React.Component {
                         2018 Congressional
                       </Dropdown.Item>
                     </DropdownButton>
-                    <Button variant="flat">Add Neighbor</Button>
-                    <Button variant="flat">Delete Neighbor</Button>
-                    <Button variant="flat">Merge Precincts</Button>
-                  </ButtonGroup>
-                </Control>
-                <Control position="bottomleft">
-                  <ButtonGroup vertical className="pb-2">
-                    <Button variant="flat">+</Button>
-                    <Button variant="flat">-</Button>
+                    <Button variant="light">Add Neighbor</Button>
+                    <Button variant="light">Delete Neighbor</Button>
+                    <Button variant="light">Merge Precincts</Button>
                   </ButtonGroup>
                   <Card>
                     <Card.Body>
@@ -632,6 +621,22 @@ class MapView extends React.Component {
                   </Card>
                 </Control>
                 <FeatureGroup>
+                  <EditControl
+                    position="topleft"
+                    // TODO: Update new coordinates in the state object
+                    // onEdited={this._onEditPath}
+                    // TODO: Push new precinct object to the precincts array
+                    // onCreated={this._onCreate}
+                    // TODO: Delete precinct object from the precincts array
+                    // TODO: Do not open side bar when clicking a precinct to delete
+                    // onDeleted={this._onDeleted}
+                    draw={{
+                      polyline: false,
+                      circle: false,
+                      marker: false,
+                      circlemarker: false
+                    }}
+                  />
                   {this.state.precincts.map((precinct) => {
                     return (
                       <Polygon
@@ -644,7 +649,6 @@ class MapView extends React.Component {
                         onClick={(e) =>
                           this.handleClick(e, precinct.precinctId)
                         }
-                        onDblClick={this.handleDblClick}
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
                       >
