@@ -84,14 +84,12 @@ class MapView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      latitude: 38.85,
-      longitude: -84.35,
-      zoom: 10,
+      latitude: 34,
+      longitude: -85,
+      zoom: 6,
       sidebarOpen: false,
       currPrecinct: {
-        precinctId: null,
-        countyId: null,
-        stateId: null,
+        id: null,
         canonicalName: null,
         ghost: null,
         multipleBorder: null,
@@ -157,39 +155,43 @@ class MapView extends React.Component {
       counties: [],
       precincts: [
         // DEBUG
-        {
-          precinctId: 1,
-          fillColor: "#fff9c4",
-          coordinates: [
-            [
-              [38.8, -84.5],
-              [38.9, -84.5],
-              [38.9, -84.4],
-              [38.8, -84.4]
-            ],
-            [
-              [38.825, -84.475],
-              [38.875, -84.475],
-              [38.875, -84.425],
-              [38.825, -84.425]
-            ]
-          ]
-        },
-        {
-          precinctId: 2,
-          fillColor: "#fff9c4",
-          coordinates: [
-            [
-              [38.8, -84.4],
-              [38.9, -84.4],
-              [39.0, -84.3],
-              [38.9, -84.2],
-              [38.8, -84.2]
-            ]
-          ]
-        }
+        // {
+        //   id: 1,
+        //   fillColor: "#fff9c4",
+        //   coordinates: [
+        //     [
+        //       [38.8, -84.5],
+        //       [38.9, -84.5],
+        //       [38.9, -84.4],
+        //       [38.8, -84.4]
+        //     ],
+        //     [
+        //       [38.825, -84.475],
+        //       [38.875, -84.475],
+        //       [38.875, -84.425],
+        //       [38.825, -84.425]
+        //     ]
+        //   ]
+        // },
+        // {
+        //   id: 2,
+        //   fillColor: "#fff9c4",
+        //   coordinates: [
+        //     [
+        //       [38.8, -84.4],
+        //       [38.9, -84.4],
+        //       [39.0, -84.3],
+        //       [38.9, -84.2],
+        //       [38.8, -84.2]
+        //     ]
+        //   ]
+        // }
       ]
     };
+  }
+
+  handleStateChange(state) {
+    this.setState({ sidebarOpen: state.isOpen });
   }
 
   handleMouseOver(e) {
@@ -200,12 +202,10 @@ class MapView extends React.Component {
     e.target.closeTooltip();
   }
 
-  handleClick(e, id) {
+  handlePrecinctClick(e, id) {
     // TODO: Change fill color of the selected state
     const precinctsCopy = [...this.state.precincts];
-    const precinctsIndex = precinctsCopy.findIndex(
-      (el) => el.precinctId === id
-    );
+    const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
     precinctsCopy[precinctsIndex] = {
       ...precinctsCopy[precinctsIndex],
       fillColor: "#102027"
@@ -229,57 +229,55 @@ class MapView extends React.Component {
       .then((res) => res.json())
       .then((data) => {
         console.log(data); // DEBUG: Remove this line later
-        demographicDataCopy[0] = { population: data.population };
-        electionDataCopy[0] = {
-          ...electionDataCopy[0],
-          demVotes: data.electionData.PRESIDENTIAL_16_DEM,
-          repVotes: data.electionData.PRESIDENTIAL_16_REP
-        };
-        electionDataCopy[1] = {
-          ...electionDataCopy[1],
-          demVotes: data.electionData.CONGRESSIONAL_16_DEM,
-          repVotes: data.electionData.CONGRESSIONAL_16_REP
-        };
-        electionDataCopy[2] = {
-          ...electionDataCopy[2],
-          demVotes: data.electionData.CONGRESSIONAL_18_DEM,
-          repVotes: data.electionData.CONGRESSIONAL_18_REP
-        };
+        // demographicDataCopy[0] = { population: data.population };
+        // electionDataCopy[0] = {
+        //   ...electionDataCopy[0],
+        //   demVotes: data.electionData.PRESIDENTIAL_16_DEM,
+        //   repVotes: data.electionData.PRESIDENTIAL_16_REP
+        // };
+        // electionDataCopy[1] = {
+        //   ...electionDataCopy[1],
+        //   demVotes: data.electionData.CONGRESSIONAL_16_DEM,
+        //   repVotes: data.electionData.CONGRESSIONAL_16_REP
+        // };
+        // electionDataCopy[2] = {
+        //   ...electionDataCopy[2],
+        //   demVotes: data.electionData.CONGRESSIONAL_18_DEM,
+        //   repVotes: data.electionData.CONGRESSIONAL_18_REP
+        // };
         ethnicityDataCopy[0] = {
           ...ethnicityDataCopy[0],
-          population: data.county.white
+          population: data.white
         };
         ethnicityDataCopy[1] = {
           ...ethnicityDataCopy[1],
-          population: data.county.africanAmer
+          population: data.africanAmer
         };
         ethnicityDataCopy[2] = {
           ...ethnicityDataCopy[2],
-          population: data.county.asian
+          population: data.asian
         };
         ethnicityDataCopy[3] = {
           ...ethnicityDataCopy[3],
-          population: data.county.nativeAmer
+          population: data.nativeAmer
         };
         ethnicityDataCopy[4] = {
           ...ethnicityDataCopy[4],
-          population: data.county.pasifika
+          population: data.pasifika
         };
         ethnicityDataCopy[5] = {
           ...ethnicityDataCopy[5],
-          population: data.county.others
+          population: data.others
         };
         this.setState({
           currPrecinct: {
             ...this.state.currPrecinct, // TODO: Remove this line later
-            precinctId: data.precinctId,
-            countyId: data.countyId,
-            stateId: data.stateId,
+            id: data.id,
             canonicalName: data.canonicalName,
             ghost: data.ghost,
             multipleBorder: data.multipleBorder,
-            demographicData: demographicDataCopy,
-            electionData: electionDataCopy,
+            // demographicData: demographicDataCopy,
+            // electionData: electionDataCopy,
             // TODO: add logBag
             // logBag: [
             //   ...this.state.currPrecinct.logBag,
@@ -299,21 +297,90 @@ class MapView extends React.Component {
     this.setState(() => ({ sidebarOpen: true }));
   }
 
-  handleStateChange(state) {
-    this.setState({ sidebarOpen: state.isOpen });
+  handleCountyClick(e, id) {
+    fetch("api/county/" + id)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // DEBUG: Remove this line later
+        data.precincts.map((currData) =>
+          this.setState({
+            precincts: [
+              ...this.state.precincts,
+              {
+                id: currData.id,
+                fillColor: "#fff9c4",
+                coordinates: JSON.parse(currData.coordinates)
+              }
+            ]
+          })
+        );
+      });
   }
 
-  handleStateSelect(id) {
+  handleStateClick(e, id) {
+    // Get counties of a selected state
+    fetch("api/state/" + id)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // DEBUG: Remove this line later
+        data.counties.map((currData) =>
+          this.setState({
+            counties: [
+              ...this.state.counties,
+              {
+                id: currData.id,
+                fillColor: "#fff9c4",
+                coordinates: JSON.parse(currData.coordinates)
+              }
+            ]
+          })
+        );
+      });
     // Selected Kentucky
-    if (id === 1) {
+    if (id === "21") {
       this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
     }
     // Selected Louisiana
-    else if (id === 2) {
+    else if (id === "22") {
+      console.log(id);
       this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
     }
     // Selected South Carolina
-    else if (id === 3) {
+    else if (id === "45") {
+      console.log(id);
+      this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
+    }
+  }
+
+  handleStateSelect(id) {
+    // Get counties of a selected state
+    fetch("api/state/" + id)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // DEBUG: Remove this line later
+        data.counties.map((currData) =>
+          this.setState({
+            counties: [
+              ...this.state.counties,
+              {
+                id: currData.id,
+                fillColor: "#fff9c4",
+                coordinates: JSON.parse(currData.coordinates)
+              }
+            ]
+          })
+        );
+      });
+    // Selected Kentucky
+    if (id === 21) {
+      this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
+    }
+    // Selected Louisiana
+    else if (id === 22) {
+      this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
+    }
+    // Selected South Carolina
+    else if (id === 45) {
       this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
     }
   }
@@ -363,92 +430,23 @@ class MapView extends React.Component {
   }
 
   componentDidMount() {
-    // DEBUG
-    // fetch("api/precinct/all")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data); // DEBUG: Remove this line later
-    //     data.map((currData) =>
-    //       this.setState({
-    //         precincts: [
-    //           ...this.state.precincts,
-    //           {
-    //             precinctId: currData.precinctId,
-    //             fillColor: "#fff9c4",
-    //             coordinates: JSON.parse(currData.coordinates)
-    //           }
-    //         ]
-    //       })
-    //     );
-    //   });
-    // fetch("api/precinct/21-117-B123")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data); // DEBUG: Remove this line later
-    //     // data.map((currData) =>
-    //     //   this.setState({
-    //     //     precincts: [
-    //     //       ...this.state.precincts,
-    //     //       {
-    //     //         precinctId: currData.precinctId,
-    //     //         fillColor: "#fff9c4",
-    //     //         coordinates: JSON.parse(currData.coordinates)
-    //     //       }
-    //     //     ]
-    //     //   })
-    //     // );
-    //   });
-    // fetch("api/county/21-117")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data); // DEBUG: Remove this line later
-    //     // data.map((currData) =>
-    //     //   this.setState({
-    //     //     precincts: [
-    //     //       ...this.state.precincts,
-    //     //       {
-    //     //         precinctId: currData.precinctId,
-    //     //         fillColor: "#fff9c4",
-    //     //         coordinates: JSON.parse(currData.coordinates)
-    //     //       }
-    //     //     ]
-    //     //   })
-    //     // );
-    //   });
-    // fetch("api/state/21")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data); // DEBUG: Remove this line later
-    //     // data.map((currData) =>
-    //     //   this.setState({
-    //     //     precincts: [
-    //     //       ...this.state.precincts,
-    //     //       {
-    //     //         precinctId: currData.precinctId,
-    //     //         fillColor: "#fff9c4",
-    //     //         coordinates: JSON.parse(currData.coordinates)
-    //     //       }
-    //     //     ]
-    //     //   })
-    //     // );
-    //   });
-    // fetch("api/state/all")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data); // DEBUG: Remove this line later
-    //     data.map((currData) =>
-    //       this.setState({
-    //         precincts: [
-    //           ...this.state.precincts,
-    //           {
-    //             precinctId: currData.precinctId,
-    //             fillColor: "#fff9c4",
-    //             coordinates: JSON.parse(currData.coordinates)
-    //           }
-    //         ]
-    //       })
-    //     );
-    //   });
+    fetch("api/state/all")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // DEBUG: Remove this line later
+        data.map((currData) =>
+          this.setState({
+            states: [
+              ...this.state.states,
+              {
+                id: currData.id,
+                fillColor: "#fff9c4",
+                coordinates: JSON.parse(currData.coordinates)
+              }
+            ]
+          })
+        );
+      });
   }
 
   render() {
@@ -524,7 +522,7 @@ class MapView extends React.Component {
           <Container fluid className="px-0">
             <Row className="pb-2">
               <Col>
-                <h2>21-117-B121</h2>
+                <h2>Canonical Name</h2>
               </Col>
             </Row>
             <Row className="pb-1">
@@ -653,20 +651,17 @@ class MapView extends React.Component {
                       title="Select State"
                     >
                       <Dropdown.Item
-                        eventKey="1"
-                        onClick={() => this.handleStateSelect(1)}
+                        onSelect={() => this.handleStateSelect(21)}
                       >
                         Kentucky
                       </Dropdown.Item>
                       <Dropdown.Item
-                        eventKey="2"
-                        onClick={() => this.handleStateSelect(2)}
+                        onSelect={() => this.handleStateSelect(22)}
                       >
                         Louisiana
                       </Dropdown.Item>
                       <Dropdown.Item
-                        eventKey="3"
-                        onClick={() => this.handleStateSelect(3)}
+                        onSelect={() => this.handleStateSelect(45)}
                       >
                         South Carolina
                       </Dropdown.Item>
@@ -678,13 +673,13 @@ class MapView extends React.Component {
                       variant="light"
                       title="Select Election"
                     >
-                      <Dropdown.Item eventKey="1" /* onClick={} */>
+                      <Dropdown.Item /* onSelect={} */>
                         2016 Presidential
                       </Dropdown.Item>
-                      <Dropdown.Item eventKey="2" /* onClick={} */>
+                      <Dropdown.Item /* onSelect={} */>
                         2016 Congressional
                       </Dropdown.Item>
-                      <Dropdown.Item eventKey="3" /* onClick={} */>
+                      <Dropdown.Item /* onSelect={} */>
                         2018 Congressional
                       </Dropdown.Item>
                     </DropdownButton>
@@ -725,24 +720,67 @@ class MapView extends React.Component {
                       circlemarker: false
                     }}
                   />
+                  {this.state.states.map((state) => {
+                    return (
+                      <Polygon
+                        id={state.id}
+                        key={state.id}
+                        positions={state.coordinates}
+                        smoothFactor={1}
+                        color={"#102027"}
+                        weight={1}
+                        fillOpacity={0.5}
+                        fillColor={state.fillColor}
+                        onClick={(e) => this.handleStateClick(e, state.id)}
+                        onMouseOver={this.handleMouseOver}
+                        onMouseOut={this.handleMouseOut}
+                      >
+                        <Tooltip>
+                          <b>{state.id}</b>
+                        </Tooltip>
+                      </Polygon>
+                    );
+                  })}
+                  {this.state.counties.map((county) => {
+                    return (
+                      <Polygon
+                        id={county.id}
+                        key={county.id}
+                        positions={county.coordinates}
+                        smoothFactor={1}
+                        color={"#102027"}
+                        weight={1}
+                        fillOpacity={0.5}
+                        fillColor={county.fillColor}
+                        onClick={(e) => this.handleCountyClick(e, county.id)}
+                        onMouseOver={this.handleMouseOver}
+                        onMouseOut={this.handleMouseOut}
+                      >
+                        <Tooltip>
+                          <b>{county.id}</b>
+                        </Tooltip>
+                      </Polygon>
+                    );
+                  })}
                   {this.state.precincts.map((precinct) => {
                     return (
                       <Polygon
-                        id={precinct.precinctId}
+                        id={precinct.id}
+                        key={precinct.id}
                         positions={precinct.coordinates}
-                        smoothFactor={5}
+                        smoothFactor={1}
                         color={"#102027"}
                         weight={1}
                         fillOpacity={0.5}
                         fillColor={precinct.fillColor}
                         onClick={(e) =>
-                          this.handleClick(e, precinct.precinctId)
+                          this.handlePrecinctClick(e, precinct.id)
                         }
                         onMouseOver={this.handleMouseOver}
                         onMouseOut={this.handleMouseOut}
                       >
                         <Tooltip>
-                          <b>{precinct.precinctId}</b>
+                          <b>{precinct.id}</b>
                         </Tooltip>
                       </Polygon>
                     );
