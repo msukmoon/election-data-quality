@@ -153,6 +153,8 @@ class MapView extends React.Component {
         coordinates: []
         // TODO: Add more properties
       },
+      states: [],
+      counties: [],
       precincts: [
         // DEBUG
         {
@@ -339,6 +341,27 @@ class MapView extends React.Component {
     //   });
   }
 
+  handlePolygonCreated(e) {
+    // TODO: Push new precinct object to the precincts array
+    // TODO: Make a POST request to the server to add new precinct
+    console.log(e);
+  }
+
+  handlePolygonEdited(e) {
+    // TODO: Update new coordinates in the state object
+    // TODO: Make a POST request to the server to update precinct coordinates
+    e.layers.eachLayer((layer) => {
+      console.log(layer.options.id);
+      console.log(layer.getLatLngs());
+      console.log(layer.toGeoJSON().geometry.coordinates);
+    });
+  }
+
+  handlePolygonDeleted(e) {
+    // TODO: Delete precinct object from the precincts array
+    // TODO: Do not open side bar when clicking a precinct to delete
+  }
+
   componentDidMount() {
     // DEBUG
     // fetch("api/precinct/all")
@@ -358,10 +381,77 @@ class MapView extends React.Component {
     //       })
     //     );
     //   });
+    // fetch("api/precinct/21-117-B123")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data); // DEBUG: Remove this line later
+    //     // data.map((currData) =>
+    //     //   this.setState({
+    //     //     precincts: [
+    //     //       ...this.state.precincts,
+    //     //       {
+    //     //         precinctId: currData.precinctId,
+    //     //         fillColor: "#fff9c4",
+    //     //         coordinates: JSON.parse(currData.coordinates)
+    //     //       }
+    //     //     ]
+    //     //   })
+    //     // );
+    //   });
+    // fetch("api/county/21-117")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data); // DEBUG: Remove this line later
+    //     // data.map((currData) =>
+    //     //   this.setState({
+    //     //     precincts: [
+    //     //       ...this.state.precincts,
+    //     //       {
+    //     //         precinctId: currData.precinctId,
+    //     //         fillColor: "#fff9c4",
+    //     //         coordinates: JSON.parse(currData.coordinates)
+    //     //       }
+    //     //     ]
+    //     //   })
+    //     // );
+    //   });
+    // fetch("api/state/21")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data); // DEBUG: Remove this line later
+    //     // data.map((currData) =>
+    //     //   this.setState({
+    //     //     precincts: [
+    //     //       ...this.state.precincts,
+    //     //       {
+    //     //         precinctId: currData.precinctId,
+    //     //         fillColor: "#fff9c4",
+    //     //         coordinates: JSON.parse(currData.coordinates)
+    //     //       }
+    //     //     ]
+    //     //   })
+    //     // );
+    //   });
+    // fetch("api/state/all")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log(data); // DEBUG: Remove this line later
+    //     data.map((currData) =>
+    //       this.setState({
+    //         precincts: [
+    //           ...this.state.precincts,
+    //           {
+    //             precinctId: currData.precinctId,
+    //             fillColor: "#fff9c4",
+    //             coordinates: JSON.parse(currData.coordinates)
+    //           }
+    //         ]
+    //       })
+    //     );
+    //   });
   }
 
   render() {
-    console.log(this.state.precincts);
     const position = [this.state.latitude, this.state.longitude];
     const electionTableColumns = [
       {
@@ -548,8 +638,10 @@ class MapView extends React.Component {
             <Col>
               <Map center={position} zoom={this.state.zoom}>
                 <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, 
+                    &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> 
+                    &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
                 />
                 <Control position="bottomleft">
                   <ButtonGroup vertical className="pb-2">
@@ -623,13 +715,9 @@ class MapView extends React.Component {
                 <FeatureGroup>
                   <EditControl
                     position="topleft"
-                    // TODO: Update new coordinates in the state object
-                    // onEdited={this._onEditPath}
-                    // TODO: Push new precinct object to the precincts array
-                    // onCreated={this._onCreate}
-                    // TODO: Delete precinct object from the precincts array
-                    // TODO: Do not open side bar when clicking a precinct to delete
-                    // onDeleted={this._onDeleted}
+                    onCreated={this.handlePolygonCreated}
+                    onEdited={this.handlePolygonEdited}
+                    onDeleted={this.handlePolygonDeleted}
                     draw={{
                       polyline: false,
                       circle: false,
@@ -640,6 +728,7 @@ class MapView extends React.Component {
                   {this.state.precincts.map((precinct) => {
                     return (
                       <Polygon
+                        id={precinct.precinctId}
                         positions={precinct.coordinates}
                         smoothFactor={5}
                         color={"#102027"}
