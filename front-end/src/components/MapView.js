@@ -20,7 +20,8 @@ import styled from "styled-components";
 
 const Styles = styled.div`
   .btn-light {
-    border-color: black;
+    background-color: white;
+    border-color: #343a40;
     font-size: 12px;
   }
 
@@ -645,9 +646,10 @@ class MapView extends React.Component {
                   <ButtonGroup vertical className="pb-2">
                     <DropdownButton
                       as={ButtonGroup}
-                      id="bg-vertical-dropdown-1"
+                      id="select-state-dropdown"
                       drop="right"
                       variant="light"
+                      size="sm"
                       title="Select State"
                     >
                       <Dropdown.Item
@@ -668,9 +670,10 @@ class MapView extends React.Component {
                     </DropdownButton>
                     <DropdownButton
                       as={ButtonGroup}
-                      id="bg-vertical-dropdown-2"
+                      id="select-election-dropdown"
                       drop="right"
                       variant="light"
+                      size="sm"
                       title="Select Election"
                     >
                       <Dropdown.Item /* onSelect={} */>
@@ -683,24 +686,39 @@ class MapView extends React.Component {
                         2018 Congressional
                       </Dropdown.Item>
                     </DropdownButton>
-                    <Button variant="light">Add Neighbor</Button>
-                    <Button variant="light">Delete Neighbor</Button>
-                    <Button variant="light">Merge Precincts</Button>
+                    <Button variant="light" size="sm">
+                      Add Neighbor
+                    </Button>
+                    <Button variant="light" size="sm">
+                      Delete Neighbor
+                    </Button>
+                    <Button variant="light" size="sm">
+                      Merge Precincts
+                    </Button>
                   </ButtonGroup>
-                  <Card>
+                  <Card border="dark">
                     <Card.Body>
                       <Form>
                         <Form.Check
+                          className="pb-1"
                           type="switch"
-                          id="1"
+                          id="precinct"
+                          label="Hide Precinct Boundaries"
+                          bsCustomPrefix="form-check"
+                        />
+                      </Form>
+                      <Form>
+                        <Form.Check
+                          className="pb-1"
+                          type="switch"
+                          id="park"
                           label="View National Park Boundaries"
                           bsCustomPrefix="form-check"
                         />
                       </Form>
                       <Form.Check
-                        className="pb-1"
                         type="switch"
-                        id="2"
+                        id="district"
                         label="View Congressional District Boundaries"
                         bsCustomPrefix="form-check"
                       />
