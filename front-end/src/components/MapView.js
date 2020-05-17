@@ -6,8 +6,6 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
-import Form from "react-bootstrap/Form";
-import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import {
   Map,
@@ -34,7 +32,7 @@ const { Overlay } = LayersControl;
 const Styles = styled.div`
   .btn-light {
     background-color: white;
-    border-color: #343a40;
+    border-color: black;
     font-size: 12px;
   }
 
@@ -49,7 +47,7 @@ const Styles = styled.div`
 
   .leaflet-container {
     width: 100%;
-    height: 90vh;
+    height: 91.35vh;
   }
 
   // NOTE: helper classes below are from react-burger-menu library
@@ -106,11 +104,12 @@ class MapView extends React.Component {
       sidebarOpen: false,
       currPrecinct: {
         id: null,
+        precinctsIndex: null,
         canonicalName: null,
         ghost: null,
         multipleBorder: null,
-        adjacentPrecinctIds: [],
-        enclosingPrecinctIds: [],
+        adjPrecIds: [],
+        enclPrecIds: [],
         demographicData: [{ population: null }],
         electionData: [
           {
@@ -169,43 +168,39 @@ class MapView extends React.Component {
       },
       states: [],
       counties: [],
-      precincts: [
-        // DEBUG
-        // {
-        //   id: 1,
-        //   fillColor: "#fff9c4",
-        //   coordinates: [
-        //     [
-        //       [38.8, -84.5],
-        //       [38.9, -84.5],
-        //       [38.9, -84.4],
-        //       [38.8, -84.4]
-        //     ],
-        //     [
-        //       [38.825, -84.475],
-        //       [38.875, -84.475],
-        //       [38.875, -84.425],
-        //       [38.825, -84.425]
-        //     ]
-        //   ]
-        // },
-        // {
-        //   id: 2,
-        //   fillColor: "#fff9c4",
-        //   coordinates: [
-        //     [
-        //       [38.8, -84.4],
-        //       [38.9, -84.4],
-        //       [39.0, -84.3],
-        //       [38.9, -84.2],
-        //       [38.8, -84.2]
-        //     ]
-        //   ]
-        // }
-      ],
+      precincts: [],
       // NOTE: The two features below are not supported yet
       nationalParks: [],
-      congDistricts: []
+      congDistricts: [],
+      // NOTE: The feature below is for testing boundary correction
+      testPolygons: [
+        {
+          id: 1,
+          fillColor: "#fff9c4",
+          coordinates: [
+            [
+              [37, -85],
+              [37.25, -84.75],
+              [38, -85],
+              [38, -84],
+              [37, -84]
+            ]
+          ]
+        },
+        {
+          id: 2,
+          fillColor: "#fff9c4",
+          coordinates: [
+            [
+              [37, -84],
+              [38, -84],
+              [38.5, -83.5],
+              [38, -83],
+              [37, -83]
+            ]
+          ]
+        }
+      ]
     };
   }
 
@@ -222,9 +217,9 @@ class MapView extends React.Component {
   }
 
   handleZoomEnd(e) {
-    if (e.target._zoom < 7 && this.state.displayMode == 2) {
+    if (e.target._zoom < 7 && this.state.displayMode === 2) {
       this.setState({ zoom: e.target._zoom, displayMode: 1, counties: [] });
-    } else if (e.target._zoom < 10 && this.state.displayMode == 3) {
+    } else if (e.target._zoom < 10 && this.state.displayMode === 3) {
       this.setState({ zoom: e.target._zoom, displayMode: 2, precincts: [] });
     } else {
       this.setState({ zoom: e.target._zoom });
@@ -232,29 +227,58 @@ class MapView extends React.Component {
   }
 
   handlePrecinctClick(e, id) {
-    // TODO: Change fill color of the selected state
+    // Fetch a data of a selected precinct and then highlight its neighbors
     const precinctsCopy = [...this.state.precincts];
     const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
     precinctsCopy[precinctsIndex] = {
       ...precinctsCopy[precinctsIndex],
-      fillColor: "#102027"
+      fillColor: "#c8b900"
     };
-    this.setState({ precincts: precinctsCopy });
-    // this.setState(prevState => ({
-    //   precincts: {
-    //     ...prevState.precincts,
-    //     fillColor: "#102027"
-    //   }
-    // }));
-    // e.target.setStyle({ fillColor: "#102027" });
+    this.setState({ isLoading: true });
+    fetch("api/precinct/" + id)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data); // DEBUG: Remove this line later
+        data.adjPrecIds.forEach((adjPrecId) => {
+          precinctsCopy.forEach((precinct) => {
+            if (precinct.id === adjPrecId) {
+              precinct.fillColor = "#ffeb3b";
+            }
+          });
+        });
+        this.setState({
+          precincts: precinctsCopy
+        });
+        this.setState({ isLoading: false });
+      });
+  }
 
-    // Modify map state
+  handlePrecinctDblClick(e, id) {
+    // Modify map view and change the fill color of a selected state
+    const precinctsCopy = [...this.state.precincts];
+    if (this.state.currPrecinct.precinctsIndex !== null) {
+      precinctsCopy[this.state.currPrecinct.precinctsIndex] = {
+        ...precinctsCopy[this.state.currPrecinct.precinctsIndex],
+        fillColor: "#fff9c4"
+      };
+    }
+    const newPrecinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+    precinctsCopy[newPrecinctsIndex] = {
+      ...precinctsCopy[newPrecinctsIndex],
+      fillColor: "#c8b900"
+    };
     this.setState({
       latitude: e.latlng.lat,
       longitude: e.latlng.lng,
-      zoom: 12
+      zoom: 12,
+      currPrecinct: {
+        ...this.state.currPrecinct,
+        precinctsIndex: newPrecinctsIndex
+      },
+      precincts: precinctsCopy
     });
 
+    // Fetch a detailed data about a selected precinct
     const demographicDataCopy = [...this.state.currPrecinct.demographicData];
     const electionDataCopy = [...this.state.currPrecinct.electionData];
     const ethnicityDataCopy = [...this.state.currPrecinct.county.ethnicityData];
@@ -305,7 +329,7 @@ class MapView extends React.Component {
         };
         this.setState({
           currPrecinct: {
-            ...this.state.currPrecinct, // TODO: Remove this line later
+            ...this.state.currPrecinct,
             id: data.id,
             canonicalName: data.canonicalName,
             ghost: data.ghost,
@@ -757,7 +781,7 @@ class MapView extends React.Component {
                   <Overlay name="State Boundaries" checked={true}>
                     <LayerGroup>
                       {this.state.states.map((state) => {
-                        if (this.state.displayMode == 1) {
+                        if (this.state.displayMode === 1) {
                           return (
                             <Polygon
                               id={state.id}
@@ -801,6 +825,8 @@ class MapView extends React.Component {
                               </Tooltip>
                             </Polygon>
                           );
+                        } else {
+                          return null;
                         }
                       })}
                     </LayerGroup>
@@ -808,7 +834,7 @@ class MapView extends React.Component {
                   <Overlay name="County Boundaries" checked={true}>
                     <LayerGroup>
                       {this.state.counties.map((county) => {
-                        if (this.state.displayMode == 2) {
+                        if (this.state.displayMode === 2) {
                           return (
                             <Polygon
                               id={county.id}
@@ -852,26 +878,16 @@ class MapView extends React.Component {
                               </Tooltip>
                             </Polygon>
                           );
+                        } else {
+                          return null;
                         }
                       })}
                     </LayerGroup>
                   </Overlay>
                   <Overlay name="Precinct Boundaries" checked={true}>
-                    <FeatureGroup>
-                      <EditControl
-                        position="bottomleft"
-                        onCreated={this.handlePolygonCreated}
-                        onEdited={this.handlePolygonEdited}
-                        onDeleted={this.handlePolygonDeleted}
-                        draw={{
-                          polyline: false,
-                          circle: false,
-                          marker: false,
-                          circlemarker: false
-                        }}
-                      />
+                    <LayerGroup>
                       {this.state.precincts.map((precinct) => {
-                        if (this.state.displayMode == 3) {
+                        if (this.state.displayMode === 3) {
                           return (
                             <Polygon
                               id={precinct.id}
@@ -882,8 +898,11 @@ class MapView extends React.Component {
                               weight={1}
                               fillOpacity={0.5}
                               fillColor={precinct.fillColor}
-                              onClick={(e) =>
-                                this.handlePrecinctClick(e, precinct.id)
+                              // onClick={(e) =>
+                              //   this.handlePrecinctClick(e, precinct.id)
+                              // }
+                              onDblClick={(e) =>
+                                this.handlePrecinctDblClick(e, precinct.id)
                               }
                               onMouseOver={this.handleMouseOver}
                               onMouseOut={this.handleMouseOut}
@@ -893,9 +912,11 @@ class MapView extends React.Component {
                               </Tooltip>
                             </Polygon>
                           );
+                        } else {
+                          return null;
                         }
                       })}
-                    </FeatureGroup>
+                    </LayerGroup>
                   </Overlay>
                   <Overlay name="National Park Boundaries">
                     <LayerGroup>
@@ -922,6 +943,36 @@ class MapView extends React.Component {
                         );
                       })}
                     </LayerGroup>
+                  </Overlay>
+                  <Overlay name="Sample Polygons" checked={false}>
+                    <FeatureGroup>
+                      <EditControl
+                        position="bottomleft"
+                        onCreated={this.handlePolygonCreated}
+                        onEdited={this.handlePolygonEdited}
+                        onDeleted={this.handlePolygonDeleted}
+                        draw={{
+                          polyline: false,
+                          circle: false,
+                          marker: false,
+                          circlemarker: false
+                        }}
+                      />
+                      {this.state.testPolygons.map((polygon) => {
+                        return (
+                          <Polygon
+                            id={polygon.id}
+                            key={polygon.id}
+                            positions={polygon.coordinates}
+                            smoothFactor={1}
+                            color={"#102027"}
+                            weight={1}
+                            fillOpacity={0.5}
+                            fillColor={polygon.fillColor}
+                          />
+                        );
+                      })}
+                    </FeatureGroup>
                   </Overlay>
                 </LayersControl>
               </Map>
