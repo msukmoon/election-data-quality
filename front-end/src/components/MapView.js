@@ -8,9 +8,11 @@ import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
+import Modal from "react-bootstrap/Modal";
 import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import Control from "react-leaflet-control";
+import { CubeGrid } from "styled-spinkit";
 import { slide as Menu } from "react-burger-menu";
 import BootstrapTable from "react-bootstrap-table-next";
 import cellEditFactory from "react-bootstrap-table2-editor";
@@ -88,6 +90,8 @@ class MapView extends React.Component {
       latitude: 34,
       longitude: -85,
       zoom: 6,
+      displayMode: 1,
+      isLoading: false,
       sidebarOpen: false,
       currPrecinct: {
         id: null,
@@ -203,6 +207,16 @@ class MapView extends React.Component {
     e.target.closeTooltip();
   }
 
+  handleZoomEnd(e) {
+    if (e.target._zoom < 7 && this.state.displayMode == 2) {
+      this.setState({ zoom: e.target._zoom, displayMode: 1, counties: [] });
+    } else if (e.target._zoom < 10 && this.state.displayMode == 3) {
+      this.setState({ zoom: e.target._zoom, displayMode: 2, precincts: [] });
+    } else {
+      this.setState({ zoom: e.target._zoom });
+    }
+  }
+
   handlePrecinctClick(e, id) {
     // TODO: Change fill color of the selected state
     const precinctsCopy = [...this.state.precincts];
@@ -221,11 +235,16 @@ class MapView extends React.Component {
     // e.target.setStyle({ fillColor: "#102027" });
 
     // Modify map state
-    this.setState({ latitude: e.latlng.lat, longitude: e.latlng.lng }); // TODO: Update zoom
+    this.setState({
+      latitude: e.latlng.lat,
+      longitude: e.latlng.lng,
+      zoom: 12
+    });
 
     const demographicDataCopy = [...this.state.currPrecinct.demographicData];
     const electionDataCopy = [...this.state.currPrecinct.electionData];
     const ethnicityDataCopy = [...this.state.currPrecinct.county.ethnicityData];
+    this.setState({ isLoading: true });
     fetch("api/precinct/" + id)
       .then((res) => res.json())
       .then((data) => {
@@ -294,11 +313,17 @@ class MapView extends React.Component {
             // TODO: Add more properties
           }
         });
+        this.setState({ isLoading: false, sidebarOpen: true });
       });
-    this.setState(() => ({ sidebarOpen: true }));
   }
 
   handleCountyClick(e, id) {
+    this.setState({
+      latitude: e.latlng.lat,
+      longitude: e.latlng.lng,
+      zoom: 10,
+      isLoading: true
+    });
     fetch("api/county/" + id)
       .then((res) => res.json())
       .then((data) => {
@@ -315,11 +340,18 @@ class MapView extends React.Component {
             ]
           })
         );
+        this.setState({ displayMode: 3, isLoading: false });
       });
   }
 
   handleStateClick(e, id) {
     // Get counties of a selected state
+    this.setState({
+      latitude: e.latlng.lat,
+      longitude: e.latlng.lng,
+      zoom: 7,
+      isLoading: true
+    });
     fetch("api/state/" + id)
       .then((res) => res.json())
       .then((data) => {
@@ -336,25 +368,25 @@ class MapView extends React.Component {
             ]
           })
         );
+        this.setState({ displayMode: 2, isLoading: false });
       });
-    // Selected Kentucky
-    if (id === "21") {
-      this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
-    }
-    // Selected Louisiana
-    else if (id === "22") {
-      console.log(id);
-      this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
-    }
-    // Selected South Carolina
-    else if (id === "45") {
-      console.log(id);
-      this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
-    }
   }
 
   handleStateSelect(id) {
+    // Selected Kentucky
+    if (id === 21) {
+      this.setState({ latitude: 37.84, longitude: -84.27, zoom: 7 });
+    }
+    // Selected Louisiana
+    else if (id === 22) {
+      this.setState({ latitude: 30.98, longitude: -91.96, zoom: 7 });
+    }
+    // Selected South Carolina
+    else if (id === 45) {
+      this.setState({ latitude: 33.84, longitude: -81.16, zoom: 7 });
+    }
     // Get counties of a selected state
+    this.setState({ isLoading: true });
     fetch("api/state/" + id)
       .then((res) => res.json())
       .then((data) => {
@@ -371,19 +403,8 @@ class MapView extends React.Component {
             ]
           })
         );
+        this.setState({ displayMode: 2, isLoading: false });
       });
-    // Selected Kentucky
-    if (id === 21) {
-      this.setState({ latitude: 37.84, longitude: -84.27, zoom: 8 });
-    }
-    // Selected Louisiana
-    else if (id === 22) {
-      this.setState({ latitude: 30.98, longitude: -91.96, zoom: 8 });
-    }
-    // Selected South Carolina
-    else if (id === 45) {
-      this.setState({ latitude: 33.84, longitude: -81.16, zoom: 8 });
-    }
   }
 
   handleTableChange(oldValue, newValue, row) {
@@ -431,6 +452,7 @@ class MapView extends React.Component {
   }
 
   componentDidMount() {
+    this.setState({ isLoading: true });
     fetch("api/state/all")
       .then((res) => res.json())
       .then((data) => {
@@ -447,6 +469,7 @@ class MapView extends React.Component {
             ]
           })
         );
+        this.setState({ isLoading: false });
       });
   }
 
@@ -632,15 +655,32 @@ class MapView extends React.Component {
             </Row>
           </Container>
         </Menu>
+        <Modal size="sm" show={this.state.isLoading}>
+          <Container>
+            <Row>
+              <Col>
+                <CubeGrid size={24} color="#102027" />
+              </Col>
+              <Col className="pt-4" xs={8}>
+                <h5>Loading Data...</h5>
+              </Col>
+            </Row>
+          </Container>
+        </Modal>
         <Container fluid className="px-0">
           <Row>
             <Col>
-              <Map center={position} zoom={this.state.zoom}>
+              <Map
+                center={position}
+                zoom={this.state.zoom}
+                onZoomEnd={(e) => this.handleZoomEnd(e)}
+              >
                 <TileLayer
                   url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
                   attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, 
                     &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> 
                     &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                  preferCanvas={true}
                 />
                 <Control position="bottomleft">
                   <ButtonGroup vertical className="pb-2">
@@ -739,69 +779,115 @@ class MapView extends React.Component {
                     }}
                   />
                   {this.state.states.map((state) => {
-                    return (
-                      <Polygon
-                        id={state.id}
-                        key={state.id}
-                        positions={state.coordinates}
-                        smoothFactor={1}
-                        color={"#102027"}
-                        weight={1}
-                        fillOpacity={0.5}
-                        fillColor={state.fillColor}
-                        onClick={(e) => this.handleStateClick(e, state.id)}
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                      >
-                        <Tooltip>
-                          <b>{state.id}</b>
-                        </Tooltip>
-                      </Polygon>
-                    );
+                    if (this.state.displayMode == 1) {
+                      return (
+                        <Polygon
+                          id={state.id}
+                          key={state.id}
+                          positions={state.coordinates}
+                          smoothFactor={1}
+                          color={"#102027"}
+                          weight={1}
+                          fillOpacity={0.5}
+                          fillColor={state.fillColor}
+                          onClick={(e) => this.handleStateClick(e, state.id)}
+                          onMouseOver={this.handleMouseOver}
+                          onMouseOut={this.handleMouseOut}
+                        >
+                          <Tooltip>
+                            <b>{state.id}</b>
+                          </Tooltip>
+                        </Polygon>
+                      );
+                    } else if (this.state.zoom < 7) {
+                      return (
+                        <Polygon
+                          id={state.id}
+                          key={state.id}
+                          positions={state.coordinates}
+                          smoothFactor={1}
+                          color={"#102027"}
+                          weight={1}
+                          fillOpacity={0.5}
+                          fillColor={state.fillColor}
+                          onClick={(e) => this.handleStateClick(e, state.id)}
+                          onMouseOver={this.handleMouseOver}
+                          onMouseOut={this.handleMouseOut}
+                        >
+                          <Tooltip>
+                            <b>{state.id}</b>
+                          </Tooltip>
+                        </Polygon>
+                      );
+                    }
                   })}
                   {this.state.counties.map((county) => {
-                    return (
-                      <Polygon
-                        id={county.id}
-                        key={county.id}
-                        positions={county.coordinates}
-                        smoothFactor={1}
-                        color={"#102027"}
-                        weight={1}
-                        fillOpacity={0.5}
-                        fillColor={county.fillColor}
-                        onClick={(e) => this.handleCountyClick(e, county.id)}
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                      >
-                        <Tooltip>
-                          <b>{county.id}</b>
-                        </Tooltip>
-                      </Polygon>
-                    );
+                    if (this.state.displayMode == 2) {
+                      return (
+                        <Polygon
+                          id={county.id}
+                          key={county.id}
+                          positions={county.coordinates}
+                          smoothFactor={1}
+                          color={"#102027"}
+                          weight={1}
+                          fillOpacity={0.5}
+                          fillColor={county.fillColor}
+                          onClick={(e) => this.handleCountyClick(e, county.id)}
+                          onMouseOver={this.handleMouseOver}
+                          onMouseOut={this.handleMouseOut}
+                        >
+                          <Tooltip>
+                            <b>{county.id}</b>
+                          </Tooltip>
+                        </Polygon>
+                      );
+                    } else if (this.state.zoom < 9) {
+                      return (
+                        <Polygon
+                          id={county.id}
+                          key={county.id}
+                          positions={county.coordinates}
+                          smoothFactor={1}
+                          color={"#102027"}
+                          weight={1}
+                          fillOpacity={0.5}
+                          fillColor={county.fillColor}
+                          onClick={(e) => this.handleCountyClick(e, county.id)}
+                          onMouseOver={this.handleMouseOver}
+                          onMouseOut={this.handleMouseOut}
+                        >
+                          <Tooltip>
+                            <b>{county.id}</b>
+                          </Tooltip>
+                        </Polygon>
+                      );
+                    }
                   })}
                   {this.state.precincts.map((precinct) => {
-                    return (
-                      <Polygon
-                        id={precinct.id}
-                        key={precinct.id}
-                        positions={precinct.coordinates}
-                        smoothFactor={1}
-                        color={"#102027"}
-                        weight={1}
-                        fillOpacity={0.5}
-                        fillColor={precinct.fillColor}
-                        onClick={(e) =>
-                          this.handlePrecinctClick(e, precinct.id)
-                        }
-                        onMouseOver={this.handleMouseOver}
-                        onMouseOut={this.handleMouseOut}
-                      >
-                        <Tooltip>
-                          <b>{precinct.id}</b>
-                        </Tooltip>
-                      </Polygon>
-                    );
+                    if (this.state.displayMode == 3) {
+                      return (
+                        <Polygon
+                          id={precinct.id}
+                          key={precinct.id}
+                          positions={precinct.coordinates}
+                          smoothFactor={1}
+                          color={"#102027"}
+                          weight={1}
+                          fillOpacity={0.5}
+                          fillColor={precinct.fillColor}
+                          onClick={(e) =>
+                            this.handlePrecinctClick(e, precinct.id)
+                          }
+                          onMouseOver={this.handleMouseOver}
+                          onMouseOut={this.handleMouseOut}
+                        >
+                          <Tooltip>
+                            <b>{precinct.id}</b>
+                          </Tooltip>
+                        </Polygon>
+                      );
+                    }
                   })}
                 </FeatureGroup>
               </Map>
