@@ -9,7 +9,16 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
-import { Map, TileLayer, FeatureGroup, Tooltip, Polygon } from "react-leaflet";
+import {
+  Map,
+  ZoomControl,
+  LayersControl,
+  LayerGroup,
+  TileLayer,
+  FeatureGroup,
+  Tooltip,
+  Polygon
+} from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import Control from "react-leaflet-control";
 import { CubeGrid } from "styled-spinkit";
@@ -19,6 +28,8 @@ import cellEditFactory from "react-bootstrap-table2-editor";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import styled from "styled-components";
+
+const { Overlay } = LayersControl;
 
 const Styles = styled.div`
   .btn-light {
@@ -191,7 +202,10 @@ class MapView extends React.Component {
         //     ]
         //   ]
         // }
-      ]
+      ],
+      // NOTE: The two features below are not supported yet
+      nationalParks: [],
+      congDistricts: []
     };
   }
 
@@ -659,7 +673,7 @@ class MapView extends React.Component {
           <Container>
             <Row>
               <Col>
-                <CubeGrid size={24} color="#102027" />
+                <CubeGrid size={24} color="#37474f" />
               </Col>
               <Col className="pt-4" xs={8}>
                 <h5>Loading Data...</h5>
@@ -672,224 +686,244 @@ class MapView extends React.Component {
             <Col>
               <Map
                 center={position}
+                zoomControl={false}
                 zoom={this.state.zoom}
                 onZoomEnd={(e) => this.handleZoomEnd(e)}
               >
-                <TileLayer
-                  url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, 
+                <ZoomControl position="bottomleft" />
+                <LayersControl position="bottomleft">
+                  <TileLayer
+                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, 
                     &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> 
                     &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-                  preferCanvas={true}
-                />
-                <Control position="bottomleft">
-                  <ButtonGroup vertical className="pb-2">
-                    <DropdownButton
-                      as={ButtonGroup}
-                      id="select-state-dropdown"
-                      drop="right"
-                      variant="light"
-                      size="sm"
-                      title="Select State"
-                    >
-                      <Dropdown.Item
-                        onSelect={() => this.handleStateSelect(21)}
-                      >
-                        Kentucky
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onSelect={() => this.handleStateSelect(22)}
-                      >
-                        Louisiana
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onSelect={() => this.handleStateSelect(45)}
-                      >
-                        South Carolina
-                      </Dropdown.Item>
-                    </DropdownButton>
-                    <DropdownButton
-                      as={ButtonGroup}
-                      id="select-election-dropdown"
-                      drop="right"
-                      variant="light"
-                      size="sm"
-                      title="Select Election"
-                    >
-                      <Dropdown.Item /* onSelect={} */>
-                        2016 Presidential
-                      </Dropdown.Item>
-                      <Dropdown.Item /* onSelect={} */>
-                        2016 Congressional
-                      </Dropdown.Item>
-                      <Dropdown.Item /* onSelect={} */>
-                        2018 Congressional
-                      </Dropdown.Item>
-                    </DropdownButton>
-                    <Button variant="light" size="sm">
-                      Add Neighbor
-                    </Button>
-                    <Button variant="light" size="sm">
-                      Delete Neighbor
-                    </Button>
-                    <Button variant="light" size="sm">
-                      Merge Precincts
-                    </Button>
-                  </ButtonGroup>
-                  <Card border="dark">
-                    <Card.Body>
-                      <Form>
-                        <Form.Check
-                          className="pb-1"
-                          type="switch"
-                          id="precinct"
-                          label="Hide Precinct Boundaries"
-                          bsCustomPrefix="form-check"
-                        />
-                      </Form>
-                      <Form>
-                        <Form.Check
-                          className="pb-1"
-                          type="switch"
-                          id="park"
-                          label="View National Park Boundaries"
-                          bsCustomPrefix="form-check"
-                        />
-                      </Form>
-                      <Form.Check
-                        type="switch"
-                        id="district"
-                        label="View Congressional District Boundaries"
-                        bsCustomPrefix="form-check"
-                      />
-                    </Card.Body>
-                  </Card>
-                </Control>
-                <FeatureGroup>
-                  <EditControl
-                    position="topleft"
-                    onCreated={this.handlePolygonCreated}
-                    onEdited={this.handlePolygonEdited}
-                    onDeleted={this.handlePolygonDeleted}
-                    draw={{
-                      polyline: false,
-                      circle: false,
-                      marker: false,
-                      circlemarker: false
-                    }}
+                    preferCanvas={true}
                   />
-                  {this.state.states.map((state) => {
-                    if (this.state.displayMode == 1) {
-                      return (
-                        <Polygon
-                          id={state.id}
-                          key={state.id}
-                          positions={state.coordinates}
-                          smoothFactor={1}
-                          color={"#102027"}
-                          weight={1}
-                          fillOpacity={0.5}
-                          fillColor={state.fillColor}
-                          onClick={(e) => this.handleStateClick(e, state.id)}
-                          onMouseOver={this.handleMouseOver}
-                          onMouseOut={this.handleMouseOut}
+                  <Control position="topleft">
+                    <ButtonGroup vertical className="pb-2">
+                      <DropdownButton
+                        as={ButtonGroup}
+                        id="select-state-dropdown"
+                        drop="right"
+                        variant="light"
+                        size="sm"
+                        title="Select State"
+                      >
+                        <Dropdown.Item
+                          onSelect={() => this.handleStateSelect(21)}
                         >
-                          <Tooltip>
-                            <b>{state.id}</b>
-                          </Tooltip>
-                        </Polygon>
-                      );
-                    } else if (this.state.zoom < 7) {
-                      return (
-                        <Polygon
-                          id={state.id}
-                          key={state.id}
-                          positions={state.coordinates}
-                          smoothFactor={1}
-                          color={"#102027"}
-                          weight={1}
-                          fillOpacity={0.5}
-                          fillColor={state.fillColor}
-                          onClick={(e) => this.handleStateClick(e, state.id)}
-                          onMouseOver={this.handleMouseOver}
-                          onMouseOut={this.handleMouseOut}
+                          Kentucky
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onSelect={() => this.handleStateSelect(22)}
                         >
-                          <Tooltip>
-                            <b>{state.id}</b>
-                          </Tooltip>
-                        </Polygon>
-                      );
-                    }
-                  })}
-                  {this.state.counties.map((county) => {
-                    if (this.state.displayMode == 2) {
-                      return (
-                        <Polygon
-                          id={county.id}
-                          key={county.id}
-                          positions={county.coordinates}
-                          smoothFactor={1}
-                          color={"#102027"}
-                          weight={1}
-                          fillOpacity={0.5}
-                          fillColor={county.fillColor}
-                          onClick={(e) => this.handleCountyClick(e, county.id)}
-                          onMouseOver={this.handleMouseOver}
-                          onMouseOut={this.handleMouseOut}
+                          Louisiana
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onSelect={() => this.handleStateSelect(45)}
                         >
-                          <Tooltip>
-                            <b>{county.id}</b>
-                          </Tooltip>
-                        </Polygon>
-                      );
-                    } else if (this.state.zoom < 9) {
-                      return (
-                        <Polygon
-                          id={county.id}
-                          key={county.id}
-                          positions={county.coordinates}
-                          smoothFactor={1}
-                          color={"#102027"}
-                          weight={1}
-                          fillOpacity={0.5}
-                          fillColor={county.fillColor}
-                          onClick={(e) => this.handleCountyClick(e, county.id)}
-                          onMouseOver={this.handleMouseOver}
-                          onMouseOut={this.handleMouseOut}
-                        >
-                          <Tooltip>
-                            <b>{county.id}</b>
-                          </Tooltip>
-                        </Polygon>
-                      );
-                    }
-                  })}
-                  {this.state.precincts.map((precinct) => {
-                    if (this.state.displayMode == 3) {
-                      return (
-                        <Polygon
-                          id={precinct.id}
-                          key={precinct.id}
-                          positions={precinct.coordinates}
-                          smoothFactor={1}
-                          color={"#102027"}
-                          weight={1}
-                          fillOpacity={0.5}
-                          fillColor={precinct.fillColor}
-                          onClick={(e) =>
-                            this.handlePrecinctClick(e, precinct.id)
-                          }
-                          onMouseOver={this.handleMouseOver}
-                          onMouseOut={this.handleMouseOut}
-                        >
-                          <Tooltip>
-                            <b>{precinct.id}</b>
-                          </Tooltip>
-                        </Polygon>
-                      );
-                    }
-                  })}
-                </FeatureGroup>
+                          South Carolina
+                        </Dropdown.Item>
+                      </DropdownButton>
+                      <DropdownButton
+                        as={ButtonGroup}
+                        id="select-election-dropdown"
+                        drop="right"
+                        variant="light"
+                        size="sm"
+                        title="Select Election"
+                      >
+                        <Dropdown.Item /* onSelect={} */>
+                          2016 Presidential
+                        </Dropdown.Item>
+                        <Dropdown.Item /* onSelect={} */>
+                          2016 Congressional
+                        </Dropdown.Item>
+                        <Dropdown.Item /* onSelect={} */>
+                          2018 Congressional
+                        </Dropdown.Item>
+                      </DropdownButton>
+                      <Button variant="light" size="sm">
+                        Add Neighbor
+                      </Button>
+                      <Button variant="light" size="sm">
+                        Delete Neighbor
+                      </Button>
+                      <Button variant="light" size="sm">
+                        Merge Precincts
+                      </Button>
+                    </ButtonGroup>
+                  </Control>
+                  <Overlay name="State Boundaries" checked={true}>
+                    <LayerGroup>
+                      {this.state.states.map((state) => {
+                        if (this.state.displayMode == 1) {
+                          return (
+                            <Polygon
+                              id={state.id}
+                              key={state.id}
+                              positions={state.coordinates}
+                              smoothFactor={1}
+                              color={"#102027"}
+                              weight={1}
+                              fillOpacity={0.5}
+                              fillColor={state.fillColor}
+                              onClick={(e) =>
+                                this.handleStateClick(e, state.id)
+                              }
+                              onMouseOver={this.handleMouseOver}
+                              onMouseOut={this.handleMouseOut}
+                            >
+                              <Tooltip>
+                                <b>{state.id}</b>
+                              </Tooltip>
+                            </Polygon>
+                          );
+                        } else if (this.state.zoom < 7) {
+                          return (
+                            <Polygon
+                              id={state.id}
+                              key={state.id}
+                              positions={state.coordinates}
+                              smoothFactor={1}
+                              color={"#102027"}
+                              weight={1}
+                              fillOpacity={0.5}
+                              fillColor={state.fillColor}
+                              onClick={(e) =>
+                                this.handleStateClick(e, state.id)
+                              }
+                              onMouseOver={this.handleMouseOver}
+                              onMouseOut={this.handleMouseOut}
+                            >
+                              <Tooltip>
+                                <b>{state.id}</b>
+                              </Tooltip>
+                            </Polygon>
+                          );
+                        }
+                      })}
+                    </LayerGroup>
+                  </Overlay>
+                  <Overlay name="County Boundaries" checked={true}>
+                    <LayerGroup>
+                      {this.state.counties.map((county) => {
+                        if (this.state.displayMode == 2) {
+                          return (
+                            <Polygon
+                              id={county.id}
+                              key={county.id}
+                              positions={county.coordinates}
+                              smoothFactor={1}
+                              color={"#102027"}
+                              weight={1}
+                              fillOpacity={0.5}
+                              fillColor={county.fillColor}
+                              onClick={(e) =>
+                                this.handleCountyClick(e, county.id)
+                              }
+                              onMouseOver={this.handleMouseOver}
+                              onMouseOut={this.handleMouseOut}
+                            >
+                              <Tooltip>
+                                <b>{county.id}</b>
+                              </Tooltip>
+                            </Polygon>
+                          );
+                        } else if (this.state.zoom < 9) {
+                          return (
+                            <Polygon
+                              id={county.id}
+                              key={county.id}
+                              positions={county.coordinates}
+                              smoothFactor={1}
+                              color={"#102027"}
+                              weight={1}
+                              fillOpacity={0.5}
+                              fillColor={county.fillColor}
+                              onClick={(e) =>
+                                this.handleCountyClick(e, county.id)
+                              }
+                              onMouseOver={this.handleMouseOver}
+                              onMouseOut={this.handleMouseOut}
+                            >
+                              <Tooltip>
+                                <b>{county.id}</b>
+                              </Tooltip>
+                            </Polygon>
+                          );
+                        }
+                      })}
+                    </LayerGroup>
+                  </Overlay>
+                  <Overlay name="Precinct Boundaries" checked={true}>
+                    <FeatureGroup>
+                      <EditControl
+                        position="bottomleft"
+                        onCreated={this.handlePolygonCreated}
+                        onEdited={this.handlePolygonEdited}
+                        onDeleted={this.handlePolygonDeleted}
+                        draw={{
+                          polyline: false,
+                          circle: false,
+                          marker: false,
+                          circlemarker: false
+                        }}
+                      />
+                      {this.state.precincts.map((precinct) => {
+                        if (this.state.displayMode == 3) {
+                          return (
+                            <Polygon
+                              id={precinct.id}
+                              key={precinct.id}
+                              positions={precinct.coordinates}
+                              smoothFactor={1}
+                              color={"#102027"}
+                              weight={1}
+                              fillOpacity={0.5}
+                              fillColor={precinct.fillColor}
+                              onClick={(e) =>
+                                this.handlePrecinctClick(e, precinct.id)
+                              }
+                              onMouseOver={this.handleMouseOver}
+                              onMouseOut={this.handleMouseOut}
+                            >
+                              <Tooltip>
+                                <b>{precinct.id}</b>
+                              </Tooltip>
+                            </Polygon>
+                          );
+                        }
+                      })}
+                    </FeatureGroup>
+                  </Overlay>
+                  <Overlay name="National Park Boundaries">
+                    <LayerGroup>
+                      {this.state.nationalParks.map((park) => {
+                        return (
+                          <Polygon
+                            id={park.id}
+                            key={park.id}
+                            positions={park.coordinates}
+                          />
+                        );
+                      })}
+                    </LayerGroup>
+                  </Overlay>
+                  <Overlay name="Congressional District Boundaries">
+                    <LayerGroup>
+                      {this.state.congDistricts.map((district) => {
+                        return (
+                          <Polygon
+                            id={district.id}
+                            key={district.id}
+                            positions={district.coordinates}
+                          />
+                        );
+                      })}
+                    </LayerGroup>
+                  </Overlay>
+                </LayersControl>
               </Map>
             </Col>
           </Row>
