@@ -20,6 +20,7 @@ import {
 import { EditControl } from "react-leaflet-draw";
 import Control from "react-leaflet-control";
 import { CubeGrid } from "styled-spinkit";
+import NumberFormat from "react-number-format";
 import { slide as Menu } from "react-burger-menu";
 import BootstrapTable from "react-bootstrap-table-next";
 import cellEditFactory from "react-bootstrap-table2-editor";
@@ -111,7 +112,6 @@ class MapView extends React.Component {
         multipleBorder: null,
         adjPrecIds: [],
         enclPrecIds: [],
-        demographicData: [{ population: null }],
         electionData: [
           {
             election: "2016 Presidential",
@@ -129,41 +129,37 @@ class MapView extends React.Component {
             repVotes: null
           }
         ],
-        logBag: [],
-        county: {
-          id: null,
-          canonicalName: null,
-          ethnicityData: [
-            {
-              ethnicity: "White",
-              population: null
-            },
-            {
-              ethnicity: "Black or African American",
-              population: null
-            },
-            {
-              ethnicity: "Asian or Asian American",
-              population: null
-            },
-            {
-              ethnicity: "American Indian",
-              population: null
-            },
-            {
-              ethnicity: "Pacific Islander",
-              population: null
-            },
-            {
-              ethnicity: "Others",
-              population: null
-            }
-          ],
-          state: {
-            id: null,
-            canonicalName: null
+        ethnicityData: [
+          {
+            ethnicity: "White",
+            population: null
+          },
+          {
+            ethnicity: "Black or African American",
+            population: null
+          },
+          {
+            ethnicity: "Asian or Asian American",
+            population: null
+          },
+          {
+            ethnicity: "Native American",
+            population: null
+          },
+          {
+            ethnicity: "Pacific Islander",
+            population: null
+          },
+          {
+            ethnicity: "Others",
+            population: null
+          },
+          {
+            ethnicity: "Total",
+            population: null
           }
-        },
+        ],
+        logBag: [],
         coordinates: []
         // TODO: Add more properties
       },
@@ -229,7 +225,35 @@ class MapView extends React.Component {
   }
 
   handleViewNeighbors() {
-    this.setState({ editMode: 2 });
+    if (this.state.editMode === 2) {
+      this.setState({ editMode: 1 });
+    } else {
+      this.setState({ editMode: 2 });
+    }
+  }
+
+  handleAddNeighbor() {
+    if (this.state.editMode === 3) {
+      this.setState({ editMode: 1 });
+    } else {
+      this.setState({ editMode: 3 });
+    }
+  }
+
+  handleDeleteNeighbor() {
+    if (this.state.editMode === 4) {
+      this.setState({ editMode: 1 });
+    } else {
+      this.setState({ editMode: 4 });
+    }
+  }
+
+  handleMergePrecincts() {
+    if (this.state.editMode === 5) {
+      this.setState({ editMode: 1 });
+    } else {
+      this.setState({ editMode: 5 });
+    }
   }
 
   handlePrecinctClick(e, id) {
@@ -259,55 +283,140 @@ class MapView extends React.Component {
       });
 
       // Fetch a detailed data about a selected precinct
-      const demographicDataCopy = [...this.state.currPrecinct.demographicData];
       const electionDataCopy = [...this.state.currPrecinct.electionData];
-      const ethnicityDataCopy = [
-        ...this.state.currPrecinct.county.ethnicityData
-      ];
+      const ethnicityDataCopy = [...this.state.currPrecinct.ethnicityData];
       this.setState({ isLoading: true });
       fetch("api/precinct/" + id)
         .then((res) => res.json())
         .then((data) => {
           console.log(data); // DEBUG: Remove this line later
-          // demographicDataCopy[0] = { population: data.population };
-          // electionDataCopy[0] = {
-          //   ...electionDataCopy[0],
-          //   demVotes: data.electionData.PRESIDENTIAL_16_DEM,
-          //   repVotes: data.electionData.PRESIDENTIAL_16_REP
-          // };
-          // electionDataCopy[1] = {
-          //   ...electionDataCopy[1],
-          //   demVotes: data.electionData.CONGRESSIONAL_16_DEM,
-          //   repVotes: data.electionData.CONGRESSIONAL_16_REP
-          // };
-          // electionDataCopy[2] = {
-          //   ...electionDataCopy[2],
-          //   demVotes: data.electionData.CONGRESSIONAL_18_DEM,
-          //   repVotes: data.electionData.CONGRESSIONAL_18_REP
-          // };
+          electionDataCopy[0] = {
+            ...electionDataCopy[0],
+            demVotes: (
+              <NumberFormat
+                value={data.electionData.PRESIDENTIAL_16_DEM}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            ),
+            repVotes: (
+              <NumberFormat
+                value={data.electionData.PRESIDENTIAL_16_REP}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
+          };
+          electionDataCopy[1] = {
+            ...electionDataCopy[1],
+            demVotes: (
+              <NumberFormat
+                value={data.electionData.CONGRESSIONAL_16_DEM}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            ),
+            repVotes: (
+              <NumberFormat
+                value={data.electionData.CONGRESSIONAL_16_REP}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
+          };
+          electionDataCopy[2] = {
+            ...electionDataCopy[2],
+            demVotes: (
+              <NumberFormat
+                value={data.electionData.CONGRESSIONAL_18_DEM}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            ),
+            repVotes: (
+              <NumberFormat
+                value={data.electionData.CONGRESSIONAL_18_REP}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
+          };
           ethnicityDataCopy[0] = {
             ...ethnicityDataCopy[0],
-            population: data.white
+            population: (
+              <NumberFormat
+                value={data.white}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           ethnicityDataCopy[1] = {
             ...ethnicityDataCopy[1],
-            population: data.africanAmer
+            population: (
+              <NumberFormat
+                value={data.africanAmer}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           ethnicityDataCopy[2] = {
             ...ethnicityDataCopy[2],
-            population: data.asian
+            population: (
+              <NumberFormat
+                value={data.asian}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           ethnicityDataCopy[3] = {
             ...ethnicityDataCopy[3],
-            population: data.nativeAmer
+            population: (
+              <NumberFormat
+                value={data.nativeAmer}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           ethnicityDataCopy[4] = {
             ...ethnicityDataCopy[4],
-            population: data.pasifika
+            population: (
+              <NumberFormat
+                value={data.pasifika}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           ethnicityDataCopy[5] = {
             ...ethnicityDataCopy[5],
-            population: data.others
+            population: (
+              <NumberFormat
+                value={data.others}
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
+          };
+          ethnicityDataCopy[6] = {
+            ...ethnicityDataCopy[6],
+            population: (
+              <NumberFormat
+                value={
+                  data.white +
+                  data.africanAmer +
+                  data.asian +
+                  data.nativeAmer +
+                  data.pasifika +
+                  data.others
+                }
+                displayType={"text"}
+                thousandSeparator={true}
+              />
+            )
           };
           this.setState({
             currPrecinct: {
@@ -316,8 +425,8 @@ class MapView extends React.Component {
               canonicalName: data.canonicalName,
               ghost: data.ghost,
               multipleBorder: data.multipleBorder,
-              // demographicData: demographicDataCopy,
-              // electionData: electionDataCopy,
+              electionData: electionDataCopy,
+              ethnicityData: ethnicityDataCopy
               // TODO: add logBag
               // logBag: [
               //   ...this.state.currPrecinct.logBag,
@@ -327,9 +436,6 @@ class MapView extends React.Component {
               //     comment: null
               //   }
               // ],
-              county: {
-                ethnicityData: ethnicityDataCopy
-              }
               // TODO: Add more properties
             }
           });
@@ -539,12 +645,6 @@ class MapView extends React.Component {
         text: "Republican Votes"
       }
     ];
-    const demographicTableColumns = [
-      {
-        dataField: "population",
-        text: "Population (Precinct Level)"
-      }
-    ];
     const ethnicityTableColumns = [
       {
         dataField: "ethnicity",
@@ -552,7 +652,7 @@ class MapView extends React.Component {
       },
       {
         dataField: "population",
-        text: "Population (County Level)"
+        text: "Population"
       }
     ];
     const logTableColumns = [
@@ -623,24 +723,7 @@ class MapView extends React.Component {
             </Row>
             <Row className="pb-1">
               <Col>
-                <h4>Demographic Data</h4>
-              </Col>
-            </Row>
-            <Row className="pb-1">
-              <Col>
-                <BootstrapTable
-                  striped
-                  hover
-                  condensed
-                  keyField="population"
-                  data={[]}
-                  columns={demographicTableColumns}
-                  noDataIndication="Data Not Available for Now"
-                  cellEdit={cellEditFactory({
-                    mode: "click",
-                    blurToSave: true
-                  })}
-                />
+                <h4>County Demographic Data</h4>
               </Col>
             </Row>
             <Row className="pb-2">
@@ -650,7 +733,7 @@ class MapView extends React.Component {
                   hover
                   condensed
                   keyField="ethnicity"
-                  data={this.state.currPrecinct.county.ethnicityData}
+                  data={this.state.currPrecinct.ethnicityData}
                   columns={ethnicityTableColumns}
                   cellEdit={cellEditFactory({
                     mode: "click",
@@ -761,24 +844,6 @@ class MapView extends React.Component {
                           South Carolina
                         </Dropdown.Item>
                       </DropdownButton>
-                      <DropdownButton
-                        as={ButtonGroup}
-                        id="select-election-dropdown"
-                        drop="right"
-                        variant="light"
-                        size="sm"
-                        title="Select Election"
-                      >
-                        <Dropdown.Item /* onSelect={} */>
-                          2016 Presidential
-                        </Dropdown.Item>
-                        <Dropdown.Item /* onSelect={} */>
-                          2016 Congressional
-                        </Dropdown.Item>
-                        <Dropdown.Item /* onSelect={} */>
-                          2018 Congressional
-                        </Dropdown.Item>
-                      </DropdownButton>
                       <Button
                         variant="light"
                         size="sm"
@@ -787,13 +852,28 @@ class MapView extends React.Component {
                       >
                         View Neighbors
                       </Button>
-                      <Button variant="light" size="sm">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        active={this.state.editMode === 3 ? true : false}
+                        onClick={() => this.handleAddNeighbor()}
+                      >
                         Add Neighbor
                       </Button>
-                      <Button variant="light" size="sm">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        active={this.state.editMode === 4 ? true : false}
+                        onClick={() => this.handleDeleteNeighbor()}
+                      >
                         Delete Neighbor
                       </Button>
-                      <Button variant="light" size="sm">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        active={this.state.editMode === 5 ? true : false}
+                        onClick={() => this.handleMergePrecincts()}
+                      >
                         Merge Precincts
                       </Button>
                     </ButtonGroup>
