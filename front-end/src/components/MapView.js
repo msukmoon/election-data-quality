@@ -292,131 +292,52 @@ class MapView extends React.Component {
           console.log(data); // DEBUG: Remove this line later
           electionDataCopy[0] = {
             ...electionDataCopy[0],
-            demVotes: (
-              <NumberFormat
-                value={data.electionData.PRESIDENTIAL_16_DEM}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            ),
-            repVotes: (
-              <NumberFormat
-                value={data.electionData.PRESIDENTIAL_16_REP}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            demVotes: data.electionData.PRESIDENTIAL_16_DEM,
+            repVotes: data.electionData.PRESIDENTIAL_16_REP
           };
           electionDataCopy[1] = {
             ...electionDataCopy[1],
-            demVotes: (
-              <NumberFormat
-                value={data.electionData.CONGRESSIONAL_16_DEM}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            ),
-            repVotes: (
-              <NumberFormat
-                value={data.electionData.CONGRESSIONAL_16_REP}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            demVotes: data.electionData.CONGRESSIONAL_16_DEM,
+            repVotes: data.electionData.CONGRESSIONAL_16_REP
           };
           electionDataCopy[2] = {
             ...electionDataCopy[2],
-            demVotes: (
-              <NumberFormat
-                value={data.electionData.CONGRESSIONAL_18_DEM}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            ),
-            repVotes: (
-              <NumberFormat
-                value={data.electionData.CONGRESSIONAL_18_REP}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            demVotes: data.electionData.CONGRESSIONAL_18_DEM,
+            repVotes: data.electionData.CONGRESSIONAL_18_REP
           };
           ethnicityDataCopy[0] = {
             ...ethnicityDataCopy[0],
-            population: (
-              <NumberFormat
-                value={data.white}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.white
           };
           ethnicityDataCopy[1] = {
             ...ethnicityDataCopy[1],
-            population: (
-              <NumberFormat
-                value={data.africanAmer}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.africanAmer
           };
           ethnicityDataCopy[2] = {
             ...ethnicityDataCopy[2],
-            population: (
-              <NumberFormat
-                value={data.asian}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.asian
           };
           ethnicityDataCopy[3] = {
             ...ethnicityDataCopy[3],
-            population: (
-              <NumberFormat
-                value={data.nativeAmer}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.nativeAmer
           };
           ethnicityDataCopy[4] = {
             ...ethnicityDataCopy[4],
-            population: (
-              <NumberFormat
-                value={data.pasifika}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.pasifika
           };
           ethnicityDataCopy[5] = {
             ...ethnicityDataCopy[5],
-            population: (
-              <NumberFormat
-                value={data.others}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population: data.others
           };
           ethnicityDataCopy[6] = {
             ...ethnicityDataCopy[6],
-            population: (
-              <NumberFormat
-                value={
-                  data.white +
-                  data.africanAmer +
-                  data.asian +
-                  data.nativeAmer +
-                  data.pasifika +
-                  data.others
-                }
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
+            population:
+              data.white +
+              data.africanAmer +
+              data.asian +
+              data.nativeAmer +
+              data.pasifika +
+              data.others
           };
           this.setState({
             currPrecinct: {
@@ -629,6 +550,37 @@ class MapView extends React.Component {
       });
   }
 
+  formatNumber(data) {
+    return (
+      <NumberFormat
+        value={data}
+        displayType={"text"}
+        thousandSeparator={true}
+      />
+    );
+  }
+
+  validateNumber(data) {
+    if (isNaN(data)) {
+      return {
+        valid: false,
+        message: "Input should be numeric"
+      };
+    } else if (data < 0) {
+      return {
+        valid: false,
+        message: "Input cannot be less than zero"
+      };
+    } else if (data > 0 && data !== data.replace(/^0+/, "")) {
+      return {
+        valid: false,
+        message: "Input cannot have a leading zero"
+      };
+    } else {
+      return true;
+    }
+  }
+
   render() {
     const position = [this.state.latitude, this.state.longitude];
     const electionTableColumns = [
@@ -638,11 +590,15 @@ class MapView extends React.Component {
       },
       {
         dataField: "demVotes",
-        text: "Democratic Votes"
+        text: "Democratic Votes",
+        formatter: this.formatNumber,
+        validator: this.validateNumber
       },
       {
         dataField: "repVotes",
-        text: "Republican Votes"
+        text: "Republican Votes",
+        formatter: this.formatNumber,
+        validator: this.validateNumber
       }
     ];
     const ethnicityTableColumns = [
@@ -652,7 +608,9 @@ class MapView extends React.Component {
       },
       {
         dataField: "population",
-        text: "Population"
+        text: "Population",
+        formatter: this.formatNumber,
+        validator: this.validateNumber
       }
     ];
     const logTableColumns = [
