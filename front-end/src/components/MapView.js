@@ -100,6 +100,7 @@ class MapView extends React.Component {
       longitude: -85,
       zoom: 6,
       displayMode: 1,
+      editMode: 1,
       isLoading: false,
       sidebarOpen: false,
       currPrecinct: {
@@ -166,6 +167,7 @@ class MapView extends React.Component {
         coordinates: []
         // TODO: Add more properties
       },
+      nextPrecinct: {},
       states: [],
       counties: [],
       precincts: [],
@@ -226,133 +228,143 @@ class MapView extends React.Component {
     }
   }
 
-  handlePrecinctClick(e, id) {
-    // Fetch a data of a selected precinct and then highlight its neighbors
-    const precinctsCopy = [...this.state.precincts];
-    const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
-    precinctsCopy[precinctsIndex] = {
-      ...precinctsCopy[precinctsIndex],
-      fillColor: "#c8b900"
-    };
-    this.setState({ isLoading: true });
-    fetch("api/precinct/" + id)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data); // DEBUG: Remove this line later
-        data.adjPrecIds.forEach((adjPrecId) => {
-          precinctsCopy.forEach((precinct) => {
-            if (precinct.id === adjPrecId) {
-              precinct.fillColor = "#ffeb3b";
-            }
-          });
-        });
-        this.setState({
-          precincts: precinctsCopy
-        });
-        this.setState({ isLoading: false });
-      });
+  handleViewNeighbors() {
+    this.setState({ editMode: 2 });
   }
 
-  handlePrecinctDblClick(e, id) {
-    // Modify map view and change the fill color of a selected state
-    const precinctsCopy = [...this.state.precincts];
-    if (this.state.currPrecinct.precinctsIndex !== null) {
-      precinctsCopy[this.state.currPrecinct.precinctsIndex] = {
-        ...precinctsCopy[this.state.currPrecinct.precinctsIndex],
-        fillColor: "#fff9c4"
+  handlePrecinctClick(e, id) {
+    if (this.state.editMode === 1) {
+      // Modify map view and change the fill color of a selected state
+      const precinctsCopy = [...this.state.precincts];
+      if (this.state.currPrecinct.precinctsIndex !== null) {
+        precinctsCopy[this.state.currPrecinct.precinctsIndex] = {
+          ...precinctsCopy[this.state.currPrecinct.precinctsIndex],
+          fillColor: "#fff9c4"
+        };
+      }
+      const newPrecinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+      precinctsCopy[newPrecinctsIndex] = {
+        ...precinctsCopy[newPrecinctsIndex],
+        fillColor: "#c8b900"
       };
-    }
-    const newPrecinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
-    precinctsCopy[newPrecinctsIndex] = {
-      ...precinctsCopy[newPrecinctsIndex],
-      fillColor: "#c8b900"
-    };
-    this.setState({
-      latitude: e.latlng.lat,
-      longitude: e.latlng.lng,
-      zoom: 12,
-      currPrecinct: {
-        ...this.state.currPrecinct,
-        precinctsIndex: newPrecinctsIndex
-      },
-      precincts: precinctsCopy
-    });
-
-    // Fetch a detailed data about a selected precinct
-    const demographicDataCopy = [...this.state.currPrecinct.demographicData];
-    const electionDataCopy = [...this.state.currPrecinct.electionData];
-    const ethnicityDataCopy = [...this.state.currPrecinct.county.ethnicityData];
-    this.setState({ isLoading: true });
-    fetch("api/precinct/" + id)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data); // DEBUG: Remove this line later
-        // demographicDataCopy[0] = { population: data.population };
-        // electionDataCopy[0] = {
-        //   ...electionDataCopy[0],
-        //   demVotes: data.electionData.PRESIDENTIAL_16_DEM,
-        //   repVotes: data.electionData.PRESIDENTIAL_16_REP
-        // };
-        // electionDataCopy[1] = {
-        //   ...electionDataCopy[1],
-        //   demVotes: data.electionData.CONGRESSIONAL_16_DEM,
-        //   repVotes: data.electionData.CONGRESSIONAL_16_REP
-        // };
-        // electionDataCopy[2] = {
-        //   ...electionDataCopy[2],
-        //   demVotes: data.electionData.CONGRESSIONAL_18_DEM,
-        //   repVotes: data.electionData.CONGRESSIONAL_18_REP
-        // };
-        ethnicityDataCopy[0] = {
-          ...ethnicityDataCopy[0],
-          population: data.white
-        };
-        ethnicityDataCopy[1] = {
-          ...ethnicityDataCopy[1],
-          population: data.africanAmer
-        };
-        ethnicityDataCopy[2] = {
-          ...ethnicityDataCopy[2],
-          population: data.asian
-        };
-        ethnicityDataCopy[3] = {
-          ...ethnicityDataCopy[3],
-          population: data.nativeAmer
-        };
-        ethnicityDataCopy[4] = {
-          ...ethnicityDataCopy[4],
-          population: data.pasifika
-        };
-        ethnicityDataCopy[5] = {
-          ...ethnicityDataCopy[5],
-          population: data.others
-        };
-        this.setState({
-          currPrecinct: {
-            ...this.state.currPrecinct,
-            id: data.id,
-            canonicalName: data.canonicalName,
-            ghost: data.ghost,
-            multipleBorder: data.multipleBorder,
-            // demographicData: demographicDataCopy,
-            // electionData: electionDataCopy,
-            // TODO: add logBag
-            // logBag: [
-            //   ...this.state.currPrecinct.logBag,
-            //   {
-            //     id: null,
-            //     category: null,
-            //     comment: null
-            //   }
-            // ],
-            county: {
-              ethnicityData: ethnicityDataCopy
-            }
-            // TODO: Add more properties
-          }
-        });
-        this.setState({ isLoading: false, sidebarOpen: true });
+      this.setState({
+        latitude: e.latlng.lat,
+        longitude: e.latlng.lng,
+        zoom: 12,
+        currPrecinct: {
+          ...this.state.currPrecinct,
+          precinctsIndex: newPrecinctsIndex
+        },
+        precincts: precinctsCopy
       });
+
+      // Fetch a detailed data about a selected precinct
+      const demographicDataCopy = [...this.state.currPrecinct.demographicData];
+      const electionDataCopy = [...this.state.currPrecinct.electionData];
+      const ethnicityDataCopy = [
+        ...this.state.currPrecinct.county.ethnicityData
+      ];
+      this.setState({ isLoading: true });
+      fetch("api/precinct/" + id)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data); // DEBUG: Remove this line later
+          // demographicDataCopy[0] = { population: data.population };
+          // electionDataCopy[0] = {
+          //   ...electionDataCopy[0],
+          //   demVotes: data.electionData.PRESIDENTIAL_16_DEM,
+          //   repVotes: data.electionData.PRESIDENTIAL_16_REP
+          // };
+          // electionDataCopy[1] = {
+          //   ...electionDataCopy[1],
+          //   demVotes: data.electionData.CONGRESSIONAL_16_DEM,
+          //   repVotes: data.electionData.CONGRESSIONAL_16_REP
+          // };
+          // electionDataCopy[2] = {
+          //   ...electionDataCopy[2],
+          //   demVotes: data.electionData.CONGRESSIONAL_18_DEM,
+          //   repVotes: data.electionData.CONGRESSIONAL_18_REP
+          // };
+          ethnicityDataCopy[0] = {
+            ...ethnicityDataCopy[0],
+            population: data.white
+          };
+          ethnicityDataCopy[1] = {
+            ...ethnicityDataCopy[1],
+            population: data.africanAmer
+          };
+          ethnicityDataCopy[2] = {
+            ...ethnicityDataCopy[2],
+            population: data.asian
+          };
+          ethnicityDataCopy[3] = {
+            ...ethnicityDataCopy[3],
+            population: data.nativeAmer
+          };
+          ethnicityDataCopy[4] = {
+            ...ethnicityDataCopy[4],
+            population: data.pasifika
+          };
+          ethnicityDataCopy[5] = {
+            ...ethnicityDataCopy[5],
+            population: data.others
+          };
+          this.setState({
+            currPrecinct: {
+              ...this.state.currPrecinct,
+              id: data.id,
+              canonicalName: data.canonicalName,
+              ghost: data.ghost,
+              multipleBorder: data.multipleBorder,
+              // demographicData: demographicDataCopy,
+              // electionData: electionDataCopy,
+              // TODO: add logBag
+              // logBag: [
+              //   ...this.state.currPrecinct.logBag,
+              //   {
+              //     id: null,
+              //     category: null,
+              //     comment: null
+              //   }
+              // ],
+              county: {
+                ethnicityData: ethnicityDataCopy
+              }
+              // TODO: Add more properties
+            }
+          });
+          this.setState({ isLoading: false, sidebarOpen: true });
+        });
+    } else if (this.state.editMode === 2) {
+      // Fetch a data of a selected precinct and then highlight its neighbors
+      const precinctsCopy = [...this.state.precincts];
+      precinctsCopy.forEach((precinct) => {
+        precinct.fillColor = "#fff9c4";
+      });
+      const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+      precinctsCopy[precinctsIndex] = {
+        ...precinctsCopy[precinctsIndex],
+        fillColor: "#c8b900"
+      };
+      this.setState({ isLoading: true });
+      fetch("api/precinct/" + id)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data); // DEBUG: Remove this line later
+          data.adjPrecIds.forEach((adjPrecId) => {
+            precinctsCopy.forEach((precinct) => {
+              if (precinct.id === adjPrecId) {
+                precinct.fillColor = "#ffeb3b";
+              }
+            });
+          });
+          this.setState({
+            editMode: 1,
+            isLoading: false,
+            precincts: precinctsCopy
+          });
+        });
+    }
   }
 
   handleCountyClick(e, id) {
@@ -767,6 +779,14 @@ class MapView extends React.Component {
                           2018 Congressional
                         </Dropdown.Item>
                       </DropdownButton>
+                      <Button
+                        variant="light"
+                        size="sm"
+                        active={this.state.editMode === 2 ? true : false}
+                        onClick={() => this.handleViewNeighbors()}
+                      >
+                        View Neighbors
+                      </Button>
                       <Button variant="light" size="sm">
                         Add Neighbor
                       </Button>
@@ -898,11 +918,8 @@ class MapView extends React.Component {
                               weight={1}
                               fillOpacity={0.5}
                               fillColor={precinct.fillColor}
-                              // onClick={(e) =>
-                              //   this.handlePrecinctClick(e, precinct.id)
-                              // }
-                              onDblClick={(e) =>
-                                this.handlePrecinctDblClick(e, precinct.id)
+                              onClick={(e) =>
+                                this.handlePrecinctClick(e, precinct.id)
                               }
                               onMouseOver={this.handleMouseOver}
                               onMouseOut={this.handleMouseOut}
