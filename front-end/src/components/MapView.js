@@ -99,6 +99,7 @@ class MapView extends React.Component {
       sidebarOpen: false,
       currPrecinct: {
         id: null,
+        selected: false,
         precinctsIndex: null,
         canonicalName: null,
         ghost: null,
@@ -156,7 +157,9 @@ class MapView extends React.Component {
         coordinates: []
         // TODO: Add more properties
       },
-      nextPrecinct: {},
+      nextPrecinct: {
+        id: null
+      },
       states: [],
       counties: [],
       precincts: [],
@@ -197,6 +200,16 @@ class MapView extends React.Component {
 
   handleStateChange(state) {
     this.setState({ sidebarOpen: state.isOpen });
+
+    // TODO: Delete this if not needed
+    // if (state.isOpen === false) {
+    //   this.setState({
+    //     sidebarOpen: state.isOpen,
+    //     currPrecinct: { ...this.state.currPrecinct, selected: false }
+    //   });
+    // } else {
+    //   this.setState({ sidebarOpen: state.isOpen });
+    // }
   }
 
   handleMouseOver(e) {
@@ -386,6 +399,69 @@ class MapView extends React.Component {
             precincts: precinctsCopy
           });
         });
+    } else if (this.state.editMode === 3) {
+      // Highlight a selected precinct
+      const precinctsCopy = [...this.state.precincts];
+      const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+      precinctsCopy[precinctsIndex] = {
+        ...precinctsCopy[precinctsIndex],
+        fillColor: "#c8b900"
+      };
+      if (this.state.currPrecinct.selected === false) {
+        this.setState({
+          currPrecinct: { ...this.state.currPrecinct, id: id, selected: true },
+          precincts: precinctsCopy
+        });
+      } else {
+        this.setState({
+          editMode: 1,
+          currPrecinct: { ...this.state.currPrecinct, selected: false },
+          nextPrecinct: { ...this.state.nextPrecinct, id: id },
+          precincts: precinctsCopy
+        });
+      }
+    } else if (this.state.editMode === 4) {
+      // Highlight a selected precinct
+      const precinctsCopy = [...this.state.precincts];
+      const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+      precinctsCopy[precinctsIndex] = {
+        ...precinctsCopy[precinctsIndex],
+        fillColor: "#c8b900"
+      };
+      if (this.state.currPrecinct.selected === false) {
+        this.setState({
+          currPrecinct: { ...this.state.currPrecinct, id: id, selected: true },
+          precincts: precinctsCopy
+        });
+      } else {
+        this.setState({
+          editMode: 1,
+          currPrecinct: { ...this.state.currPrecinct, selected: false },
+          nextPrecinct: { ...this.state.nextPrecinct, id: id },
+          precincts: precinctsCopy
+        });
+      }
+    } else if (this.state.editMode === 5) {
+      // Highlight a selected precinct
+      const precinctsCopy = [...this.state.precincts];
+      const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
+      precinctsCopy[precinctsIndex] = {
+        ...precinctsCopy[precinctsIndex],
+        fillColor: "#c8b900"
+      };
+      if (this.state.currPrecinct.selected === false) {
+        this.setState({
+          currPrecinct: { ...this.state.currPrecinct, id: id, selected: true },
+          precincts: precinctsCopy
+        });
+      } else {
+        this.setState({
+          editMode: 1,
+          currPrecinct: { ...this.state.currPrecinct, selected: false },
+          nextPrecinct: { ...this.state.nextPrecinct, id: id },
+          precincts: precinctsCopy
+        });
+      }
     }
   }
 
@@ -406,7 +482,7 @@ class MapView extends React.Component {
               ...this.state.precincts,
               {
                 id: currData.id,
-                fillColor: "#fff9c4",
+                fillColor: currData.hasError ? "#ff8a50" : "#fff9c4",
                 coordinates: JSON.parse(currData.coordinates)
               }
             ]
@@ -434,7 +510,7 @@ class MapView extends React.Component {
               ...this.state.counties,
               {
                 id: currData.id,
-                fillColor: "#fff9c4",
+                fillColor: currData.hasError ? "#ff8a50" : "#fff9c4",
                 coordinates: JSON.parse(currData.coordinates)
               }
             ]
@@ -639,7 +715,7 @@ class MapView extends React.Component {
     return (
       <Styles>
         <div id="outer-container">
-          <Modal size="sm" show={this.state.isLoading}>
+          <Modal size="sm" show={this.state.isLoading} onHide={() => {}}>
             <Container>
               <Row>
                 <Col>
