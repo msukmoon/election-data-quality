@@ -156,6 +156,38 @@ class MapView extends React.Component {
             population: null
           }
         ],
+        dataSources: [
+          {
+            id: 1,
+            name: null,
+            category: null,
+            url: null
+          },
+          {
+            id: 2,
+            name: null,
+            category: null,
+            url: null
+          },
+          {
+            id: 3,
+            name: null,
+            category: null,
+            url: null
+          },
+          {
+            id: 4,
+            name: null,
+            category: null,
+            url: null
+          },
+          {
+            id: 5,
+            name: null,
+            category: null,
+            url: null
+          }
+        ],
         logBag: [],
         coordinates: []
         // TODO: Add more properties
@@ -294,6 +326,8 @@ class MapView extends React.Component {
       // Fetch a detailed data about a selected precinct
       const electionDataCopy = [...this.state.currPrecinct.electionData];
       const ethnicityDataCopy = [...this.state.currPrecinct.ethnicityData];
+      const dataSourcesCopy = [...this.state.currPrecinct.dataSources];
+      const countyStateIds = id.split("-", 2);
       fetch("api/precinct/" + id)
         .then((res) => res.json())
         .then((data) => {
@@ -347,6 +381,112 @@ class MapView extends React.Component {
               data.pasifika +
               data.others
           };
+          if (countyStateIds[0] === 21) {
+            dataSourcesCopy[0] = {
+              ...dataSourcesCopy[0],
+              name: "Code For America",
+              category: "Geographic",
+              url:
+                "https://codeforamerica.carto.com/u/civicdataalliance/tables/ky_voting_precinct_geographic_outlines_and_data/public"
+            };
+            dataSourcesCopy[1] = {
+              ...dataSourcesCopy[1],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=Counties+%28and+equivalent%29"
+            };
+            dataSourcesCopy[2] = {
+              ...dataSourcesCopy[2],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=States+%28and+equivalent%29"
+            };
+            dataSourcesCopy[3] = {
+              ...dataSourcesCopy[3],
+              name: "Open Elections",
+              category: "Election",
+              url: "https://github.com/openelections/openelections-data-ky"
+            };
+            dataSourcesCopy[4] = {
+              ...dataSourcesCopy[4],
+              name: "US Census",
+              category: "Demographic",
+              url:
+                "https://data.census.gov/cedsci/table?q=All%20counties%20in%20Kentucky%20race&g=0400000US21.050000&tid=ACSDT5Y2018.B02001&layer=county&vintage=2018"
+            };
+          } else if (countyStateIds[0] === 22) {
+            dataSourcesCopy[0] = {
+              ...dataSourcesCopy[1],
+              name: "Election GeoData",
+              category: "Geographic",
+              url:
+                "https://github.com/nvkelso/election-geodata/tree/master/data/22-louisiana/statewide/2016"
+            };
+            dataSourcesCopy[1] = {
+              ...dataSourcesCopy[0],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=Counties+%28and+equivalent%29"
+            };
+            dataSourcesCopy[2] = {
+              ...dataSourcesCopy[2],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=States+%28and+equivalent%29"
+            };
+            dataSourcesCopy[3] = {
+              ...dataSourcesCopy[3],
+              name: "Open Elections",
+              category: "Election",
+              url: "https://github.com/openelections/openelections-data-la"
+            };
+            dataSourcesCopy[4] = {
+              ...dataSourcesCopy[4],
+              name: "US Census",
+              category: "Demographic",
+              url:
+                "https://data.census.gov/cedsci/table?q=All%20counties%20in%20Louisiana%20race&g=0400000US22.050000&tid=ACSDT5Y2018.B02001&layer=county&cid=DP05_0001E&vintage=2018"
+            };
+          } else {
+            dataSourcesCopy[0] = {
+              ...dataSourcesCopy[0],
+              name: "Election GeoData",
+              category: "Geographic",
+              url:
+                "https://github.com/nvkelso/election-geodata/tree/master/data/45-south-carolina/statewide/2013"
+            };
+            dataSourcesCopy[1] = {
+              ...dataSourcesCopy[1],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=Counties+%28and+equivalent%29"
+            };
+            dataSourcesCopy[2] = {
+              ...dataSourcesCopy[2],
+              name: "US Census",
+              category: "Geographic",
+              url:
+                "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2019&layergroup=States+%28and+equivalent%29"
+            };
+            dataSourcesCopy[3] = {
+              ...dataSourcesCopy[3],
+              name: "Open Elections",
+              category: "Election",
+              url: "https://github.com/openelections/openelections-data-sc"
+            };
+            dataSourcesCopy[4] = {
+              ...dataSourcesCopy[4],
+              name: "US Census",
+              category: "Demographic",
+              url:
+                "https://data.census.gov/cedsci/table?q=All%20counties%20in%20South%20Carolina%20race&g=0400000US45.050000&tid=ACSDT5Y2018.B02001&layer=county&cid=DP05_0001E&vintage=2018"
+            };
+          }
           this.setState({
             isLoading: false,
             sidebarOpen: true,
@@ -362,9 +502,8 @@ class MapView extends React.Component {
               interPrecIds: data.interPrecIds,
               electionData: electionDataCopy,
               ethnicityData: ethnicityDataCopy,
-              // TODO: add logBag
+              dataSources: dataSourcesCopy,
               logBag: data.logBag
-              // TODO: Add more properties
             }
           });
         });
@@ -420,7 +559,6 @@ class MapView extends React.Component {
           isLoading: true,
           currPrecinct: {
             ...this.state.currPrecinct,
-            // adjPrecIds: [...this.state.currPrecinct.adjPrecIds, id],
             selected: false
           },
           precincts: precinctsCopy
@@ -438,13 +576,15 @@ class MapView extends React.Component {
           .then((data) => {
             console.log(data); // DEBUG: Remove this line later
 
+            // Update adjPrecIds array
             data[0].adjPrecIds.push(data[1].id);
             data[1].adjPrecIds.push(data[0].id);
 
-            console.log(data[0].adjPrecIds);
-            console.log(data[1].adjPrecIds);
+            // Get county and state ids
+            const countyStateIds = data[0].id.split("-", 2);
 
             // Make a PUT request to the server with "api/precinct"
+            let isDoneLoading = false;
             fetch("api/precinct", {
               method: "PUT",
               headers: {
@@ -452,8 +592,8 @@ class MapView extends React.Component {
               },
               body: JSON.stringify({
                 "id": data[0].id,
-                "countyId": "21-075",
-                "stateId": "21",
+                "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+                "stateId": countyStateIds[0],
                 "ghost": data[0].ghost,
                 "multipleBorder": data[0].multipleBorder,
                 "electionData": {
@@ -481,6 +621,15 @@ class MapView extends React.Component {
               .then((res) => res.json())
               .then((data) => {
                 console.log("Success:", data);
+                if (isDoneLoading === true) {
+                  this.setState({
+                    editMode: 1,
+                    displayMode: 3,
+                    isLoading: false
+                  });
+                } else {
+                  isDoneLoading = true;
+                }
               })
               .catch((error) => {
                 console.error("Error:", error);
@@ -493,8 +642,8 @@ class MapView extends React.Component {
               },
               body: JSON.stringify({
                 "id": data[1].id,
-                "countyId": "21-075",
-                "stateId": "21",
+                "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+                "stateId": countyStateIds[0],
                 "ghost": data[1].ghost,
                 "multipleBorder": data[1].multipleBorder,
                 "electionData": {
@@ -522,11 +671,15 @@ class MapView extends React.Component {
               .then((res) => res.json())
               .then((data) => {
                 console.log("Success:", data);
-                this.setState({
-                  editMode: 1,
-                  displayMode: 3,
-                  isLoading: false
-                });
+                if (isDoneLoading === true) {
+                  this.setState({
+                    editMode: 1,
+                    displayMode: 3,
+                    isLoading: false
+                  });
+                } else {
+                  isDoneLoading = true;
+                }
               })
               .catch((error) => {
                 console.error("Error:", error);
@@ -554,9 +707,141 @@ class MapView extends React.Component {
       } else {
         this.setState({
           editMode: 1,
+          isLoading: true,
           currPrecinct: { ...this.state.currPrecinct, selected: false },
           precincts: precinctsCopy
         });
+
+        Promise.all([
+          fetch("api/precinct/" + this.state.currPrecinct.id),
+          fetch("api/precinct/" + id)
+        ])
+          .then(async ([res1, res2]) => {
+            const currPrecinctData = await res1.json();
+            const nextPrecinctData = await res2.json();
+            return [currPrecinctData, nextPrecinctData];
+          })
+          .then((data) => {
+            console.log(data); // DEBUG: Remove this line later
+
+            // Remove old polygons from the precincts array
+            const index1 = data[0].adjPrecIds.findIndex(
+              (el) => el.id === data[1].id
+            );
+            const index2 = data[1].adjPrecIds.findIndex(
+              (el) => el.id === data[0].id
+            );
+            data[0].splice(index1, 1);
+            data[1].splice(index2, 1);
+
+            // Get county and state ids
+            const countyStateIds = data[0].id.split("-", 2);
+
+            // Make a PUT request to the server with "api/precinct"
+            let isDoneLoading = false;
+            fetch("api/precinct", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "id": data[0].id,
+                "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+                "stateId": countyStateIds[0],
+                "ghost": data[0].ghost,
+                "multipleBorder": data[0].multipleBorder,
+                "electionData": {
+                  "CONGRESSIONAL_16_DEM": data[0].CONGRESSIONAL_16_DEM,
+                  "PRESIDENTIAL_16_REP": data[0].PRESIDENTIAL_16_REP,
+                  "CONGRESSIONAL_18_DEM": data[0].CONGRESSIONAL_18_DEM,
+                  "CONGRESSIONAL_16_REP": data[0].CONGRESSIONAL_16_REP,
+                  "CONGRESSIONAL_18_REP": data[0].CONGRESSIONAL_18_REP,
+                  "PRESIDENTIAL_16_DEM": data[0].PRESIDENTIAL_16_DEM
+                },
+                "adjPrecIds": data[0].adjPrecIds,
+                "enclPrecIds": data[0].enclPrecIds,
+                "interPrecIds": data[0].interPrecIds,
+                "logBag": data[0].logBag,
+                "canonicalName": data[0].canonicalName,
+                "demoModified": data[0].demoModified,
+                "white": data[0].white,
+                "africanAmer": data[0].africanAmer,
+                "asian": data[0].asian,
+                "nativeAmer": data[0].nativeAmer,
+                "others": data[0].others,
+                "pasifika": data[0].pasifika
+              })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Success:", data);
+                if (isDoneLoading === true) {
+                  this.setState({
+                    editMode: 1,
+                    displayMode: 3,
+                    isLoading: false
+                  });
+                } else {
+                  isDoneLoading = true;
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+            // Make a PUT request to the server with "api/precinct"
+            fetch("api/precinct", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "id": data[1].id,
+                "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+                "stateId": countyStateIds[0],
+                "ghost": data[1].ghost,
+                "multipleBorder": data[1].multipleBorder,
+                "electionData": {
+                  "CONGRESSIONAL_16_DEM": data[1].CONGRESSIONAL_16_DEM,
+                  "PRESIDENTIAL_16_REP": data[1].PRESIDENTIAL_16_REP,
+                  "CONGRESSIONAL_18_DEM": data[1].CONGRESSIONAL_18_DEM,
+                  "CONGRESSIONAL_16_REP": data[1].CONGRESSIONAL_16_REP,
+                  "CONGRESSIONAL_18_REP": data[1].CONGRESSIONAL_18_REP,
+                  "PRESIDENTIAL_16_DEM": data[1].PRESIDENTIAL_16_DEM
+                },
+                "adjPrecIds": data[1].adjPrecIds,
+                "enclPrecIds": data[1].enclPrecIds,
+                "interPrecIds": data[1].interPrecIds,
+                "logBag": data[1].logBag,
+                "canonicalName": data[1].canonicalName,
+                "demoModified": data[1].demoModified,
+                "white": data[1].white,
+                "africanAmer": data[1].africanAmer,
+                "asian": data[1].asian,
+                "nativeAmer": data[1].nativeAmer,
+                "others": data[1].others,
+                "pasifika": data[1].pasifika
+              })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Success:", data);
+                if (isDoneLoading === true) {
+                  this.setState({
+                    editMode: 1,
+                    displayMode: 3,
+                    isLoading: false
+                  });
+                } else {
+                  isDoneLoading = true;
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     }
     // Merge precincts mode
@@ -598,8 +883,6 @@ class MapView extends React.Component {
         const newPolygon = union(currPolygon, nextPolygon);
 
         // Remove old polygons from the precincts array
-        // DEBUG
-        // const nextPrecinctId = precinctsCopy[precinctsIndex].id;
         let precinctsIndexs;
         if (this.state.currPrecinct.precinctsIndex > precinctsIndex) {
           precinctsIndexs = [
@@ -634,7 +917,11 @@ class MapView extends React.Component {
           .then((res) => res.json())
           .then((data) => {
             console.log(data); // DEBUG: Remove this line later
-            // TODO: Make a DELETE request to the server with "api/precinct/merge"
+
+            // Get county and state ids
+            const countyStateIds = data.id.split("-", 2);
+
+            // Make a DELETE request to the server with "api/precinct/merge"
             fetch("api/precinct/merge", {
               method: "DELETE",
               headers: {
@@ -642,8 +929,8 @@ class MapView extends React.Component {
               },
               body: JSON.stringify({
                 "id": data.id,
-                "countyId": "21-075",
-                "stateId": "21",
+                "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+                "stateId": countyStateIds[0],
                 "ghost": data.ghost,
                 "multipleBorder": data.multipleBorder,
                 "electionData": {
@@ -703,7 +990,14 @@ class MapView extends React.Component {
               ...this.state.precincts,
               {
                 id: currData.id,
-                fillColor: currData.hasError ? "#ff8a50" : "#fff9c4",
+                fillColor: currData.ghost ? "#607d8b" : "#fff9c4",
+                // fillColor: currData.ghost
+                //   ? "#607d8b"
+                //   : currData.error
+                //   ? "#ff8a50"
+                //   : "#fff9c4",
+                ghost: currData.ghost,
+                // error: currData.error,
                 coordinates: JSON.parse(currData.coordinates)
               }
             ]
@@ -779,11 +1073,19 @@ class MapView extends React.Component {
   handleTableChange() {
     // Get county and state ids
     const countyStateIds = this.state.currPrecinct.id.split("-", 2);
-    // DEBUG
-    console.log(countyStateIds[0]);
-    console.log(countyStateIds[0] + "-" + countyStateIds[1]);
 
     // Make a PUT request to the server with "api/precinct"
+    if (this.state.currPrecinct.ghost === true) {
+      this.setState({
+        currPrecinct: {
+          ...this.state.currPrecinct,
+          ghose: false
+        },
+        isLoading: true
+      });
+    } else {
+      this.setState({ isLoading: true });
+    }
     fetch("api/precinct", {
       method: "PUT",
       headers: {
@@ -875,6 +1177,17 @@ class MapView extends React.Component {
       });
   }
 
+  formatLink(data) {
+    return (
+      <Button variant="link" href={data}>
+        View Source
+      </Button>
+      // <a href={cell} target="_blank">
+      //   See mail
+      // </a>
+    );
+  }
+
   formatNumber(data) {
     return (
       <NumberFormat
@@ -963,7 +1276,8 @@ class MapView extends React.Component {
       },
       {
         dataField: "url",
-        text: "Source URL"
+        text: "Source URL",
+        formatter: this.formatLink
       }
     ];
     return (
@@ -988,7 +1302,7 @@ class MapView extends React.Component {
             pageWrapId={"page-wrap"}
             outerContainerId={"outer-container"}
             menuClassName={"menu-right"}
-            width={"35%"}
+            width={"37%"}
             customBurgerIcon={false}
             isOpen={this.state.sidebarOpen}
             onStateChange={(state) => this.handleStateChange(state)}
@@ -1076,14 +1390,14 @@ class MapView extends React.Component {
                     striped
                     hover
                     condensed
-                    keyField="name"
-                    data={[]}
+                    keyField="id"
+                    data={this.state.currPrecinct.dataSources}
                     columns={dataSourceTableColumns}
-                    noDataIndication="Data Not Available for Now"
-                    cellEdit={cellEditFactory({
-                      mode: "click",
-                      blurToSave: true
-                    })}
+                    // noDataIndication="Data Not Available for Now"
+                    // cellEdit={cellEditFactory({
+                    //   mode: "click",
+                    //   blurToSave: true
+                    // })}
                   />
                 </Col>
               </Row>
