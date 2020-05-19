@@ -19,6 +19,7 @@ import {
 } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import Control from "react-leaflet-control";
+import { polygon, multiPolygon, union } from "@turf/turf";
 import { CubeGrid } from "styled-spinkit";
 import NumberFormat from "react-number-format";
 import { push as Menu } from "react-burger-menu";
@@ -157,9 +158,6 @@ class MapView extends React.Component {
         coordinates: []
         // TODO: Add more properties
       },
-      nextPrecinct: {
-        id: null
-      },
       states: [],
       counties: [],
       precincts: [],
@@ -263,6 +261,7 @@ class MapView extends React.Component {
   }
 
   handlePrecinctClick(e, id) {
+    // Display precinct data mode
     if (this.state.editMode === 1) {
       // Modify map view and change the fill color of a selected state
       const precinctsCopy = [...this.state.precincts];
@@ -370,7 +369,9 @@ class MapView extends React.Component {
             }
           });
         });
-    } else if (this.state.editMode === 2) {
+    }
+    // View neighbors mode
+    else if (this.state.editMode === 2) {
       // Fetch a data of a selected precinct and then highlight its neighbors
       const precinctsCopy = [...this.state.precincts];
       precinctsCopy.forEach((precinct) => {
@@ -399,7 +400,9 @@ class MapView extends React.Component {
             precincts: precinctsCopy
           });
         });
-    } else if (this.state.editMode === 3) {
+    }
+    // Add neighbor mode
+    else if (this.state.editMode === 3) {
       // Highlight a selected precinct
       const precinctsCopy = [...this.state.precincts];
       const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
@@ -416,11 +419,12 @@ class MapView extends React.Component {
         this.setState({
           editMode: 1,
           currPrecinct: { ...this.state.currPrecinct, selected: false },
-          nextPrecinct: { ...this.state.nextPrecinct, id: id },
           precincts: precinctsCopy
         });
       }
-    } else if (this.state.editMode === 4) {
+    }
+    // Delete neighbor mode
+    else if (this.state.editMode === 4) {
       // Highlight a selected precinct
       const precinctsCopy = [...this.state.precincts];
       const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
@@ -437,11 +441,12 @@ class MapView extends React.Component {
         this.setState({
           editMode: 1,
           currPrecinct: { ...this.state.currPrecinct, selected: false },
-          nextPrecinct: { ...this.state.nextPrecinct, id: id },
           precincts: precinctsCopy
         });
       }
-    } else if (this.state.editMode === 5) {
+    }
+    // Merge precincts mode
+    else if (this.state.editMode === 5) {
       // Highlight a selected precinct
       const precinctsCopy = [...this.state.precincts];
       const precinctsIndex = precinctsCopy.findIndex((el) => el.id === id);
@@ -451,16 +456,78 @@ class MapView extends React.Component {
       };
       if (this.state.currPrecinct.selected === false) {
         this.setState({
-          currPrecinct: { ...this.state.currPrecinct, id: id, selected: true },
+          currPrecinct: {
+            ...this.state.currPrecinct,
+            id: id,
+            precinctsIndex: precinctsIndex,
+            selected: true,
+            coordinates: precinctsCopy[precinctsIndex].coordinates
+          },
           precincts: precinctsCopy
         });
       } else {
+        // Merge polygons and get its new coordinates
+        let currPolygon;
+        let nextPolygon;
+        if (this.state.currPrecinct.coordinates[0][0][0][0] === undefined) {
+          currPolygon = polygon(this.state.currPrecinct.coordinates);
+        } else {
+          currPolygon = multiPolygon(this.state.currPrecinct.coordinates);
+        }
+        if (
+          precinctsCopy[precinctsIndex].coordinates[0][0][0][0] === undefined
+        ) {
+          nextPolygon = polygon(precinctsCopy[precinctsIndex].coordinates);
+        } else {
+          nextPolygon = multiPolygon(precinctsCopy[precinctsIndex].coordinates);
+        }
+        const newPolygon = union(currPolygon, nextPolygon);
+
+        // Remove old polygons from the precincts array
+        let precinctsIndexs;
+        if (this.state.currPrecinct.precinctsIndex > precinctsIndex) {
+          precinctsIndexs = [
+            precinctsIndex,
+            this.state.currPrecinct.precinctsIndex
+          ];
+        } else {
+          precinctsIndexs = [
+            this.state.currPrecinct.precinctsIndex,
+            precinctsIndex
+          ];
+        }
+        while (precinctsIndexs.length) {
+          precinctsCopy.splice(precinctsIndexs.pop(), 1);
+        }
+
         this.setState({
           editMode: 1,
           currPrecinct: { ...this.state.currPrecinct, selected: false },
-          nextPrecinct: { ...this.state.nextPrecinct, id: id },
-          precincts: precinctsCopy
+          precincts: [
+            ...precinctsCopy,
+            {
+              id: this.state.currPrecinct.id,
+              fillColor: "#c8b900",
+              coordinates: newPolygon.geometry.coordinates
+            }
+          ]
         });
+
+        // TODO: Make a POST request to the server with "api/precinct/merge"
+        // fetch("api/precinct/merge", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   },
+        //   body: JSON.stringify()
+        // })
+        //   .then((response) => response.json())
+        //   .then((data) => {
+        //     console.log("Success:", data);
+        //   })
+        //   .catch((error) => {
+        //     console.error("Error:", error);
+        //   });
       }
     }
   }
