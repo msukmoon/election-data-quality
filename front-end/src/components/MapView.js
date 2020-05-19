@@ -232,16 +232,6 @@ class MapView extends React.Component {
 
   handleStateChange(state) {
     this.setState({ sidebarOpen: state.isOpen });
-
-    // TODO: Delete this if not needed
-    // if (state.isOpen === false) {
-    //   this.setState({
-    //     sidebarOpen: state.isOpen,
-    //     currPrecinct: { ...this.state.currPrecinct, selected: false }
-    //   });
-    // } else {
-    //   this.setState({ sidebarOpen: state.isOpen });
-    // }
   }
 
   handleMouseOver(e) {
@@ -990,14 +980,14 @@ class MapView extends React.Component {
               ...this.state.precincts,
               {
                 id: currData.id,
-                fillColor: currData.ghost ? "#607d8b" : "#fff9c4",
-                // fillColor: currData.ghost
-                //   ? "#607d8b"
-                //   : currData.error
-                //   ? "#ff8a50"
-                //   : "#fff9c4",
+                // fillColor: currData.ghost ? "#607d8b" : "#fff9c4",
+                fillColor: currData.ghost
+                  ? "#607d8b"
+                  : currData.error
+                  ? "#ff8a50"
+                  : "#fff9c4",
                 ghost: currData.ghost,
-                // error: currData.error,
+                error: currData.error,
                 coordinates: JSON.parse(currData.coordinates)
               }
             ]
@@ -1182,9 +1172,6 @@ class MapView extends React.Component {
       <Button variant="link" href={data}>
         View Source
       </Button>
-      // <a href={cell} target="_blank">
-      //   See mail
-      // </a>
     );
   }
 
