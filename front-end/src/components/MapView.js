@@ -105,8 +105,10 @@ class MapView extends React.Component {
         canonicalName: null,
         ghost: null,
         multipleBorder: null,
+        demoModified: null,
         adjPrecIds: [],
         enclPrecIds: [],
+        interPrecIds: [],
         electionData: [
           {
             election: "2016 Presidential",
@@ -354,17 +356,14 @@ class MapView extends React.Component {
               canonicalName: data.canonicalName,
               ghost: data.ghost,
               multipleBorder: data.multipleBorder,
+              demoModified: data.demoModified,
+              adjPrecIds: data.adjPrecIds,
+              enclPrecIds: data.enclPrecIds,
+              interPrecIds: data.interPrecIds,
               electionData: electionDataCopy,
-              ethnicityData: ethnicityDataCopy
+              ethnicityData: ethnicityDataCopy,
               // TODO: add logBag
-              // logBag: [
-              //   ...this.state.currPrecinct.logBag,
-              //   {
-              //     id: null,
-              //     category: null,
-              //     comment: null
-              //   }
-              // ],
+              logBag: data.logBag
               // TODO: Add more properties
             }
           });
@@ -418,9 +417,124 @@ class MapView extends React.Component {
       } else {
         this.setState({
           editMode: 1,
-          currPrecinct: { ...this.state.currPrecinct, selected: false },
+          isLoading: true,
+          currPrecinct: {
+            ...this.state.currPrecinct,
+            // adjPrecIds: [...this.state.currPrecinct.adjPrecIds, id],
+            selected: false
+          },
           precincts: precinctsCopy
         });
+
+        Promise.all([
+          fetch("api/precinct/" + this.state.currPrecinct.id),
+          fetch("api/precinct/" + id)
+        ])
+          .then(async ([res1, res2]) => {
+            const currPrecinctData = await res1.json();
+            const nextPrecinctData = await res2.json();
+            return [currPrecinctData, nextPrecinctData];
+          })
+          .then((data) => {
+            console.log(data); // DEBUG: Remove this line later
+
+            data[0].adjPrecIds.push(data[1].id);
+            data[1].adjPrecIds.push(data[0].id);
+
+            console.log(data[0].adjPrecIds);
+            console.log(data[1].adjPrecIds);
+
+            // Make a PUT request to the server with "api/precinct"
+            fetch("api/precinct", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "id": data[0].id,
+                "countyId": "21-075",
+                "stateId": "21",
+                "ghost": data[0].ghost,
+                "multipleBorder": data[0].multipleBorder,
+                "electionData": {
+                  "CONGRESSIONAL_16_DEM": data[0].CONGRESSIONAL_16_DEM,
+                  "PRESIDENTIAL_16_REP": data[0].PRESIDENTIAL_16_REP,
+                  "CONGRESSIONAL_18_DEM": data[0].CONGRESSIONAL_18_DEM,
+                  "CONGRESSIONAL_16_REP": data[0].CONGRESSIONAL_16_REP,
+                  "CONGRESSIONAL_18_REP": data[0].CONGRESSIONAL_18_REP,
+                  "PRESIDENTIAL_16_DEM": data[0].PRESIDENTIAL_16_DEM
+                },
+                "adjPrecIds": data[0].adjPrecIds,
+                "enclPrecIds": data[0].enclPrecIds,
+                "interPrecIds": data[0].interPrecIds,
+                "logBag": data[0].logBag,
+                "canonicalName": data[0].canonicalName,
+                "demoModified": data[0].demoModified,
+                "white": data[0].white,
+                "africanAmer": data[0].africanAmer,
+                "asian": data[0].asian,
+                "nativeAmer": data[0].nativeAmer,
+                "others": data[0].others,
+                "pasifika": data[0].pasifika
+              })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Success:", data);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+            // Make a PUT request to the server with "api/precinct"
+            fetch("api/precinct", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "id": data[1].id,
+                "countyId": "21-075",
+                "stateId": "21",
+                "ghost": data[1].ghost,
+                "multipleBorder": data[1].multipleBorder,
+                "electionData": {
+                  "CONGRESSIONAL_16_DEM": data[1].CONGRESSIONAL_16_DEM,
+                  "PRESIDENTIAL_16_REP": data[1].PRESIDENTIAL_16_REP,
+                  "CONGRESSIONAL_18_DEM": data[1].CONGRESSIONAL_18_DEM,
+                  "CONGRESSIONAL_16_REP": data[1].CONGRESSIONAL_16_REP,
+                  "CONGRESSIONAL_18_REP": data[1].CONGRESSIONAL_18_REP,
+                  "PRESIDENTIAL_16_DEM": data[1].PRESIDENTIAL_16_DEM
+                },
+                "adjPrecIds": data[1].adjPrecIds,
+                "enclPrecIds": data[1].enclPrecIds,
+                "interPrecIds": data[1].interPrecIds,
+                "logBag": data[1].logBag,
+                "canonicalName": data[1].canonicalName,
+                "demoModified": data[1].demoModified,
+                "white": data[1].white,
+                "africanAmer": data[1].africanAmer,
+                "asian": data[1].asian,
+                "nativeAmer": data[1].nativeAmer,
+                "others": data[1].others,
+                "pasifika": data[1].pasifika
+              })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Success:", data);
+                this.setState({
+                  editMode: 1,
+                  displayMode: 3,
+                  isLoading: false
+                });
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     }
     // Delete neighbor mode
@@ -484,6 +598,8 @@ class MapView extends React.Component {
         const newPolygon = union(currPolygon, nextPolygon);
 
         // Remove old polygons from the precincts array
+        // DEBUG
+        // const nextPrecinctId = precinctsCopy[precinctsIndex].id;
         let precinctsIndexs;
         if (this.state.currPrecinct.precinctsIndex > precinctsIndex) {
           precinctsIndexs = [
@@ -513,21 +629,59 @@ class MapView extends React.Component {
           ]
         });
 
-        // TODO: Make a POST request to the server with "api/precinct/merge"
-        // fetch("api/precinct/merge", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json"
-        //   },
-        //   body: JSON.stringify()
-        // })
-        //   .then((response) => response.json())
-        //   .then((data) => {
-        //     console.log("Success:", data);
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error:", error);
-        //   });
+        this.setState({ isLoading: true });
+        fetch("api/precinct/" + this.state.currPrecinct.id)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data); // DEBUG: Remove this line later
+            // TODO: Make a DELETE request to the server with "api/precinct/merge"
+            fetch("api/precinct/merge", {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "id": data.id,
+                "countyId": "21-075",
+                "stateId": "21",
+                "ghost": data.ghost,
+                "multipleBorder": data.multipleBorder,
+                "electionData": {
+                  "CONGRESSIONAL_16_DEM": data.CONGRESSIONAL_16_DEM,
+                  "PRESIDENTIAL_16_REP": data.PRESIDENTIAL_16_REP,
+                  "CONGRESSIONAL_18_DEM": data.CONGRESSIONAL_18_DEM,
+                  "CONGRESSIONAL_16_REP": data.CONGRESSIONAL_16_REP,
+                  "CONGRESSIONAL_18_REP": data.CONGRESSIONAL_18_REP,
+                  "PRESIDENTIAL_16_DEM": data.PRESIDENTIAL_16_DEM
+                },
+                "adjPrecIds": data.adjPrecIds,
+                "enclPrecIds": data.enclPrecIds,
+                "interPrecIds": data.interPrecIds,
+                "logBag": data.logBag,
+                "canonicalName": data.canonicalName,
+                "demoModified": data.demoModified,
+                "white": data.white,
+                "africanAmer": data.africanAmer,
+                "asian": data.asian,
+                "nativeAmer": data.nativeAmer,
+                "others": data.others,
+                "pasifika": data.pasifika,
+                "mergeHolder": id,
+                "coordinates": JSON.stringify(newPolygon.geometry.coordinates)
+              })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Success:", data);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+            this.setState({
+              editMode: 1,
+              isLoading: false
+            });
+          });
       }
     }
   }
@@ -622,27 +776,60 @@ class MapView extends React.Component {
       });
   }
 
-  handleTableChange(oldValue, newValue, row) {
-    // DEBUG: Remove these lines below later
-    console.log(oldValue);
-    console.log(newValue);
-    console.log(row);
+  handleTableChange() {
+    // Get county and state ids
+    const countyStateIds = this.state.currPrecinct.id.split("-", 2);
+    // DEBUG
+    console.log(countyStateIds[0]);
+    console.log(countyStateIds[0] + "-" + countyStateIds[1]);
 
-    // TODO: Make a POST request to the server with "api/precinct"
-    // fetch("api/precinct", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json"
-    //   },
-    //   body: JSON.stringify()
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log("Success:", data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
+    // Make a PUT request to the server with "api/precinct"
+    fetch("api/precinct", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "id": this.state.currPrecinct.id,
+        "countyId": countyStateIds[0] + "-" + countyStateIds[1],
+        "stateId": countyStateIds[0],
+        "ghost": this.state.currPrecinct.ghost,
+        "multipleBorder": this.state.currPrecinct.multipleBorder,
+        "electionData": {
+          "CONGRESSIONAL_16_DEM": this.state.currPrecinct.electionData[1]
+            .demVotes,
+          "PRESIDENTIAL_16_REP": this.state.currPrecinct.electionData[0]
+            .repVotes,
+          "CONGRESSIONAL_18_DEM": this.state.currPrecinct.electionData[2]
+            .demVotes,
+          "CONGRESSIONAL_16_REP": this.state.currPrecinct.electionData[1]
+            .repVotes,
+          "CONGRESSIONAL_18_REP": this.state.currPrecinct.electionData[2]
+            .repVotes,
+          "PRESIDENTIAL_16_DEM": this.state.currPrecinct.electionData[0]
+            .demVotes
+        },
+        "adjPrecIds": this.state.currPrecinct.adjPrecIds,
+        "enclPrecIds": this.state.currPrecinct.enclPrecIds,
+        "interPrecIds": this.state.currPrecinct.interPrecIds,
+        "logBag": this.state.currPrecinct.logBag,
+        "canonicalName": this.state.currPrecinct.canonicalName,
+        "demoModified": this.state.currPrecinct.demoModified,
+        "white": this.state.currPrecinct.ethnicityData[0].population,
+        "africanAmer": this.state.currPrecinct.ethnicityData[1].population,
+        "asian": this.state.currPrecinct.ethnicityData[2].population,
+        "nativeAmer": this.state.currPrecinct.ethnicityData[3].population,
+        "others": this.state.currPrecinct.ethnicityData[5].population,
+        "pasifika": this.state.currPrecinct.ethnicityData[4].population
+      })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   }
 
   handlePolygonCreated(e) {
@@ -829,7 +1016,7 @@ class MapView extends React.Component {
                     cellEdit={cellEditFactory({
                       mode: "click",
                       blurToSave: true,
-                      afterSaveCell: this.handleTableChange
+                      afterSaveCell: () => this.handleTableChange()
                     })}
                   />
                 </Col>
@@ -850,7 +1037,8 @@ class MapView extends React.Component {
                     columns={ethnicityTableColumns}
                     cellEdit={cellEditFactory({
                       mode: "click",
-                      blurToSave: true
+                      blurToSave: true,
+                      afterSaveCell: () => this.handleTableChange()
                     })}
                   />
                 </Col>
