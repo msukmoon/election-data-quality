@@ -35,7 +35,11 @@ This will be updated later.
 
 ## Authors
 
-- **Myungsuk Moon** - [msukmoon](https://github.com/msukmoon) - jaymoon9876@gmail.com \* Wrote the front-end part of the application.
-- **Brendan Kondracki** - [brendankon](https://github.com/brendankon) \* Preprocessed the geological and statistical election data for the application.
-- **Hong Zheng** - [HOZH](https://github.com/HOZH) \* Developed the server of the application.
-- **Hye-Jun Jeong** - [HyejunJeong](https://github.com/HyejunJeong) \* Developed the database of the application and worked on integrating it to the server.
+- **Myungsuk Moon** - [msukmoon](https://github.com/msukmoon) - jaymoon9876@gmail.com
+  - Wrote the front-end part of the application.
+- **Brendan Kondracki** - [brendankon](https://github.com/brendankon)
+  - Preprocessed the geological and statistical election data for the application.
+- **Hong Zheng** - [HOZH](https://github.com/HOZH)
+  - Developed the server of the application.
+- **Hye-Jun Jeong** - [HyejunJeong](https://github.com/HyejunJeong)
+  - Developed the database of the application and worked on integrating it to the server.
