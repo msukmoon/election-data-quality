@@ -4,7 +4,7 @@
 
 Election Data Quality is a web application developed with using React Library, Spring Framework, React-Leaflet, React Bootstrap and styled-components.
 
-The U.S. redraws their [electoral precincts](https://en.wikipedia.org/wiki/Electoral_precinct) every 10 years after the census. This application is part of the project that aims to draw their precincts fairly and prevent [gerrymandering](https://en.wikipedia.org/wiki/Gerrymandering) by using computing technologies. This application lets users to easily check and edit geological and statistical election data.
+The U.S. redraws their [electoral precincts](https://en.wikipedia.org/wiki/Electoral_precinct) every 10 years after the census. This application is part of the project that aims to draw the precincts fairly and prevent [gerrymandering](https://en.wikipedia.org/wiki/Gerrymandering) by using computing technologies. This application lets users to easily check and edit geological and statistical election data.
 
 <p align="center">
   <img src="doc/screenshots/states.png" title="State Level View">
@@ -32,3 +32,10 @@ This will be updated later.
 ### Checking Source Codes
 
 This will be updated later.
+
+## Authors
+
+- **Myungsuk Moon** - [msukmoon](https://github.com/msukmoon) - jaymoon9876@gmail.com \* Wrote the front-end part of the application.
+- **Brendan Kondracki** - [brendankon](https://github.com/brendankon) \* Preprocessed the geological and statistical election data for the application.
+- **Hong Zheng** - [HOZH](https://github.com/HOZH) \* Developed the server of the application.
+- **Hye-Jun Jeong** - [HyejunJeong](https://github.com/HyejunJeong) \* Developed the database of the application and worked on integrating it to the server.
