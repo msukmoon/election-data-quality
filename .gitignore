@@ -2,3 +2,5 @@
 .DS_Store
 
 # Add files to ignore for git below
+node_modules/
+build/
