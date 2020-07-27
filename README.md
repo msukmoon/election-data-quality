@@ -23,7 +23,35 @@ This repository only contains a front-end part of the application. The source co
 
 ### Running the Application
 
-This will be updated later.
+1. Clone this repository.
+
+```shell
+git clone https://github.com/msukmoon/election-data-quality
+```
+
+2. Go to the cloned directory.
+
+```shell
+cd election-data-quality
+```
+
+3. Do a clean install of the application.
+
+```shell
+npm ci
+```
+
+4. Launch the server.
+
+```shell
+java -jar server/hozh-server-0.8.3.jar
+```
+
+5. In another terminal tab or window, start the application package.
+
+```shell
+npm start
+```
 
 ### Supplementary Documents
 
