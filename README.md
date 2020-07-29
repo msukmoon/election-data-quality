@@ -8,20 +8,56 @@ The U.S. redraws their [electoral precincts](https://en.wikipedia.org/wiki/Elect
 
 <p align="center">
   <img src="doc/screenshots/states.png" title="State Level View">
+</p>
+<p align="center">State Level View</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/counties.png" title="County Level View">
+</p>
+<p align="center">County Level View</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/loading.png" title="Loading Message">
+</p>
+<p align="center">Loading Message</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/precincts.png" title="Precinct Level View">
+</p>
+<p align="center">Precinct Level View</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/sidebar.png" title="Sidebar View">
-  <img src="doc/screenshots/neighbors.png" title="Highlighted Neighbors">
+</p>
+<p align="center">Sidebar View</p>
+<br/>
+<p align="center">
+  <img src="doc/screenshots/neighbors.png" title="Neighbors Highlighted">
+</p>
+<p align="center">Neighbors Highlighted</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/drawing.png" title="Drawing Shape Mode">
+</p>
+<p align="center">Drawing Shape Mode</p>
+<br/>
+<p align="center">
   <img src="doc/screenshots/editing.png" title="Editing Shape Mode">
 </p>
+<p align="center">Editing Shape Mode</p>
 
 ## Getting Started
 
 This repository only contains a front-end part of the application. The source code of a back-end part of the application is at this [repository](https://github.com/HOZH/hozh-416). The source code for preprocessing the election data could be provided when requested to [brendankon](https://github.com/brendankon).
 
 ### Running the Application
+
+#### Requirements
+
+- Java SE 14 or higher
+- Node.js v12.16.0 or higher
+
+#### Instructions
 
 1. Clone this repository.
 
@@ -53,17 +89,13 @@ java -jar server/hozh-server-0.8.3.jar
 npm start
 ```
 
-### Supplementary Documents
-
-This will be updated later.
-
 ### Checking Source Codes
 
-This will be updated later.
+Source codes are mainly in the `src` folder. All React components are in the `src/components` folder. Most of the work is put into the map component which is `src/components/MapView.js`.
 
 ## Authors
 
-- **Myungsuk Moon** - [msukmoon](https://github.com/msukmoon) - jaymoon9876@gmail.com
+- **Myungsuk (Jay) Moon** - [msukmoon](https://github.com/msukmoon) - jaymoon9876@gmail.com
   - Wrote the front-end part of the application.
 - **Brendan Kondracki** - [brendankon](https://github.com/brendankon)
   - Preprocessed the geological and statistical election data for the application.
