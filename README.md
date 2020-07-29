@@ -8,43 +8,14 @@ The U.S. redraws their [electoral precincts](https://en.wikipedia.org/wiki/Elect
 
 <p align="center">
   <img src="doc/screenshots/states.png" title="State Level View">
-</p>
-<p align="center">State Level View</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/counties.png" title="County Level View">
-</p>
-<p align="center">County Level View</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/loading.png" title="Loading Message">
-</p>
-<p align="center">Loading Message</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/precincts.png" title="Precinct Level View">
-</p>
-<p align="center">Precinct Level View</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/sidebar.png" title="Sidebar View">
-</p>
-<p align="center">Sidebar View</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/neighbors.png" title="Neighbors Highlighted">
-</p>
-<p align="center">Neighbors Highlighted</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/drawing.png" title="Drawing Shape Mode">
-</p>
-<p align="center">Drawing Shape Mode</p>
-<br/>
-<p align="center">
   <img src="doc/screenshots/editing.png" title="Editing Shape Mode">
 </p>
-<p align="center">Editing Shape Mode</p>
 
 ## Getting Started
 
