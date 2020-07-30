@@ -62,7 +62,7 @@ npm start
 
 ### Checking Source Codes
 
-Source codes are mainly in the `src` folder. All React components are in the `src/components` folder. Most of the work is put into the map component which is `src/components/MapView.js`.
+Source codes are mainly in `src` folder. All React components are in `src/components` folder. Most of the work is put into the map component which is `src/components/MapView.js`.
 
 ## Authors
 
